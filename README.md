@@ -15,7 +15,7 @@ cd /Users/moon/JnJ/Developments/Utils
 xcli -e init -r "jna-cli||jnjsoftone||ts-swc-npm||Jnjsoft Nodejs App for cli(Command Line Interface) With xgit, xcli, xweb, ... in Typescript"
 
 # package install
-npm install 
+npm install jnu-abc
 ```
 ## functions
 
