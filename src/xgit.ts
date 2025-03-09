@@ -95,13 +95,13 @@ const findGithubAccount = async (userName: string, src = 'github'): Promise<any>
       token: process.env.ENV_GITHUB_TOKEN || '',
     };
     const result:any = await readJsonFromGithub('Apis/github.json', options);
-    console.log(`#### readJsonFromGithub: ${JSON.stringify(result)}`);
+    console.log(`@@@@ readJsonFromGithub: ${JSON.stringify(result)}`);
     return result[userName]
   }
 };
 
 // * github account setup
-const account = findGithubAccount(options.userName ?? '', 'github');
+const account = await findGithubAccount(options.userName ?? '', 'github');
 account.userName = options.userName ?? '';
 console.log(`#### git account: ${JSON.stringify(account)}`);
 const octokit = new Octokit({ auth: account.token });
