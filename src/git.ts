@@ -35,7 +35,7 @@ import type { GithubAccount, RepoOptions } from './types.js';
  * const account = findGithubAccount('username');
  * ```
  */
-const findGithubAccount = (userName: string, src = 'local', options: any = {}): any => {
+const findGithubAccount = (userName: string, src = 'local'): any => {
   if (src === 'local') {
     const settingsPath = process.env.DEV_ROOT ? `${process.env.DEV_ROOT}/jd-environments` : 'C:/JnJ/Developments/jd-environments';
     return loadJson(`${settingsPath}/Apis/github.json`)[userName];
