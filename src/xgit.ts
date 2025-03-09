@@ -81,7 +81,7 @@ function getLocalPath(repoName: string) {
   return localPath;
 }
 
-const findGithubAccount = (userName: string, src = 'github'): any => {
+const findGithubAccount = async (userName: string, src = 'github'): Promise<any> => {
   if (src === 'local') {
     const settingsPath = process.env.DEV_ROOT ? `${process.env.DEV_ROOT}/jd-environments` : 'C:/JnJ/Developments/jd-environments';
     return loadJson(`${settingsPath}/Apis/github.json`)[userName];
@@ -94,8 +94,9 @@ const findGithubAccount = (userName: string, src = 'github'): any => {
       repo: process.env.ENV_GITHUB_REPO || '',
       token: process.env.ENV_GITHUB_TOKEN || '',
     };
-    console.log(`#### readJsonFromGithub: ${readJsonFromGithub('Apis/github.json', options)}`);
-    return readJsonFromGithub('Apis/github.json', options)[userName]
+    const result:any = await readJsonFromGithub('Apis/github.json', options);
+    console.log(`#### readJsonFromGithub: ${JSON.stringify(result)}`);
+    return result[userName]
   }
 };
 
