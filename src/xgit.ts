@@ -101,121 +101,126 @@ const findGithubAccount = async (userName: string, src = 'github'): Promise<any>
 };
 
 // * github account setup
-const account = await findGithubAccount(options.userName ?? '', 'github');
-account.userName = options.userName ?? '';
-console.log(`#### git account: ${JSON.stringify(account)}`);
-const octokit = new Octokit({ auth: account.token });
-const localPath = getLocalPath(options.repoName ?? '') ?? '';
-let result: any;
+(async () => {
+  try {
+    const account = await findGithubAccount(options.userName ?? '', 'github');
+    account.userName = options.userName ?? '';
+    console.log(`#### git account: ${JSON.stringify(account)}`);
+    const octokit = new Octokit({ auth: account.token });
+    const localPath = getLocalPath(options.repoName ?? '') ?? '';
+    let result: any;
 
-// * exec
-switch (options.exec) {
-  case 'listRepos':
-    (async () => {
-      try {
-        result = await findAllRepos(octokit);
-        console.log(JSON.stringify(result, null, 2));
-      } catch (error) {
-        console.error('저장소 목록 조회 중 오류 발생:', error);
-      }
-    })();
-    break;
-  case 'createRemoteRepo':
-    console.log(`createRemoteRepo: ${options}`);
-    createRemoteRepo(octokit, {
-      name: options.repoName ?? '',
-      description: options.description ?? '',
-      isPrivate: options.isPrivate ?? false,
-    });
-    break;
-  case 'deleteRemoteRepo':
-    deleteRemoteRepo(
-      octokit,
-      {
-        name: options.repoName ?? '',
-      },
-      account
-    );
-    break;
-  case 'setLocalConfig':
-    setLocalConfig(
-      {
-        name: options.repoName ?? '',
-        description: options.description ?? '',
-      },
-      account,
-      localPath
-    );
-    break;
-  case 'cloneRepo':
-    cloneRepo(
-      {
-        name: options.repoName ?? '',
-        description: options.description ?? '',
-      },
-      account,
-      localPath
-    );
-    break;
-  case 'initLocalRepo':
-    initLocalRepo(
-      {
-        name: options.repoName ?? '',
-        description: options.description ?? ''
-      },
-      account,
-      localPath
-    );
-    break;
-  case 'initRepo':
-    console.log('====initRepo');
-    initRepo(
-      octokit,
-      {
-        name: options.repoName ?? '',
-        description: options.description ?? '',
-        isPrivate: options.isPrivate ?? false,
-      },
-      account,
-      localPath
-    );
-    break;
-  case 'pushRepo':
-    pushRepo(
-      {
-        name: options.repoName ?? '',
-        description: options.description ?? '',
-      },
-      account,
-      localPath
-    );
-    break;
-  case 'copyRepo':
-    copyRepo(
-      {
-        name: options.repoName ?? '',
-        description: options.description ?? 'description',
-        isPrivate: options.isPrivate ?? false,
-      },
-      account,
-      localPath
-    );
-    break;
-  case 'makeRepo': // 리모트 저장소 생성, 로컬 저장소 push, ex) xgit -e makeRepo -n "video-stream-app" -u "jnjsoftko" -d "video stream app"
-    makeRepo(
-      octokit,
-      {
-        name: options.repoName ?? '',
-        description: options.description ?? '',
-        isPrivate: options.isPrivate ?? false,
-      },
-      account,
-      localPath
-    );
-    break;
-  case 'removeRepo': // 리모트 저장소 삭제, ex) xgit -e removeRepo -n "video-stream-app" -u "jnjsoftko"
-    removeRepo(octokit, { name: options.repoName ?? '' }, account, localPath);
-    break;
-}
+    // * exec
+    switch (options.exec) {
+      case 'listRepos':
+        try {
+          result = await findAllRepos(octokit);
+          console.log(JSON.stringify(result, null, 2));
+        } catch (error) {
+          console.error('저장소 목록 조회 중 오류 발생:', error);
+        }
+        break;
+      case 'createRemoteRepo':
+        console.log(`createRemoteRepo: ${options}`);
+        await createRemoteRepo(octokit, {
+          name: options.repoName ?? '',
+          description: options.description ?? '',
+          isPrivate: options.isPrivate ?? false,
+        });
+        break;
+      case 'deleteRemoteRepo':
+        await deleteRemoteRepo(
+          octokit,
+          {
+            name: options.repoName ?? '',
+          },
+          account
+        );
+        break;
+      case 'setLocalConfig':
+        setLocalConfig(
+          {
+            name: options.repoName ?? '',
+            description: options.description ?? '',
+          },
+          account,
+          localPath
+        );
+        break;
+      case 'cloneRepo':
+        cloneRepo(
+          {
+            name: options.repoName ?? '',
+            description: options.description ?? '',
+          },
+          account,
+          localPath
+        );
+        break;
+      case 'initLocalRepo':
+        initLocalRepo(
+          {
+            name: options.repoName ?? '',
+            description: options.description ?? ''
+          },
+          account,
+          localPath
+        );
+        break;
+      case 'initRepo':
+        console.log('====initRepo');
+        await initRepo(
+          octokit,
+          {
+            name: options.repoName ?? '',
+            description: options.description ?? '',
+            isPrivate: options.isPrivate ?? false,
+          },
+          account,
+          localPath
+        );
+        break;
+      case 'pushRepo':
+        pushRepo(
+          {
+            name: options.repoName ?? '',
+            description: options.description ?? '',
+          },
+          account,
+          localPath
+        );
+        break;
+      case 'copyRepo':
+        copyRepo(
+          {
+            name: options.repoName ?? '',
+            description: options.description ?? 'description',
+            isPrivate: options.isPrivate ?? false,
+          },
+          account,
+          localPath
+        );
+        break;
+      case 'makeRepo':
+        await makeRepo(
+          octokit,
+          {
+            name: options.repoName ?? '',
+            description: options.description ?? '',
+            isPrivate: options.isPrivate ?? false,
+          },
+          account,
+          localPath
+        );
+        break;
+      case 'removeRepo':
+        await removeRepo(octokit, { name: options.repoName ?? '' }, account, localPath);
+        break;
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    process.exit(1);
+  }
+})();
 
 // github -u mooninlearn -n udemy-test -e makeRepo -d "test makeRepo"
