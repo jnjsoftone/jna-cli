@@ -57,6 +57,12 @@ const options = yargs
     describe: 'Private Repository',
     type: 'boolean',
   })
+  .option('s', {
+    alias: 'src',
+    default: 'local',
+    describe: 'Source of Github Account',
+    type: 'string',
+  })
   .option('d', {
     alias: 'description',
     describe: 'Description For Repository',
@@ -74,7 +80,7 @@ function getLocalPath(repoName: string) {
 }
 
 // * github account setup
-const account = findGithubAccount(options.userName ?? '');
+const account = findGithubAccount(options.userName ?? '', 'github');
 account.userName = options.userName ?? '';
 console.log(`#### git account: ${JSON.stringify(account)}`);
 const octokit = new Octokit({ auth: account.token });

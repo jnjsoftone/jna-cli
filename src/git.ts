@@ -13,15 +13,15 @@ import { Octokit } from '@octokit/rest';
 
 // ? Internal Modules
 import { sleep, loadJson } from 'jnu-abc';
+import { readJsonFromGithub } from 'jnu-cloud';
 import { PLATFORM } from './cli.js';
-
+JSON.str
 // & Types AREA
 // &---------------------------------------------------------------------------
 import type { GithubAccount, RepoOptions } from './types.js';
 
 // & Variables AREA
 // &---------------------------------------------------------------------------
-const settingsPath = `${process.env.DEV_ROOT}/jd-environments` ?? 'C:/JnJ/Developments/jd-environments';
 
 // & Functions AREA
 // &---------------------------------------------------------------------------
@@ -35,8 +35,18 @@ const settingsPath = `${process.env.DEV_ROOT}/jd-environments` ?? 'C:/JnJ/Develo
  * const account = findGithubAccount('username');
  * ```
  */
-const findGithubAccount = (userName: string): GithubAccount => {
-  return loadJson(`${settingsPath}/Apis/github.json`)[userName];
+const findGithubAccount = (userName: string, src = 'local', options: any = {}): any => {
+  if (src === 'local') {
+    const settingsPath = process.env.DEV_ROOT ? `${process.env.DEV_ROOT}/jd-environments` : 'C:/JnJ/Developments/jd-environments';
+    return loadJson(`${settingsPath}/Apis/github.json`)[userName];
+  } else if (src === 'github') {  // ~/.bashrc { owner, repo, token } ENV_GIT_OWNER, ENV_GIT_REPO, ENV_GIT_TOKEN
+    const options = {
+      owner: process.env.ENV_GIT_OWNER || '',
+      repo: process.env.ENV_GIT_REPO || '',
+      token: process.env.ENV_GIT_TOKEN || '',
+    };
+    return readJsonFromGithub('Apis/github.json', options)
+  }
 };
 
 /**

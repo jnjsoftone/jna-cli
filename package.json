@@ -55,7 +55,8 @@
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "jnu-abc": "^0.0.14"
+    "jnu-abc": "^0.0.14",
+    "jnu-cloud": "^0.0.3"
   },
   "bin": {
     "xcli": "./cjs/xcli.js",
