@@ -41,9 +41,9 @@ const findGithubAccount = (userName: string, src = 'local', options: any = {}): 
     return loadJson(`${settingsPath}/Apis/github.json`)[userName];
   } else if (src === 'github') {  // ~/.bashrc { owner, repo, token } ENV_GIT_OWNER, ENV_GIT_REPO, ENV_GIT_TOKEN
     const options = {
-      owner: process.env.ENV_GIT_OWNER || '',
-      repo: process.env.ENV_GIT_REPO || '',
-      token: process.env.ENV_GIT_TOKEN || '',
+      owner: process.env.ENV_GITHUB_OWNER || '',
+      repo: process.env.ENV_GITHUB_REPO || '',
+      token: process.env.ENV_GITHUB_TOKEN || '',
     };
     return readJsonFromGithub('Apis/github.json', options)
   }
