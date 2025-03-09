@@ -94,7 +94,7 @@ const findGithubAccount = (userName: string, src = 'github'): any => {
       repo: process.env.ENV_GITHUB_REPO || '',
       token: process.env.ENV_GITHUB_TOKEN || '',
     };
-    return readJsonFromGithub('Apis/github.json', options)
+    return readJsonFromGithub('Apis/github.json', options)[userName]
   }
 };
 
