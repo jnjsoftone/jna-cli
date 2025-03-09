@@ -40,6 +40,9 @@ const findGithubAccount = (userName: string, src = 'local', options: any = {}): 
     const settingsPath = process.env.DEV_ROOT ? `${process.env.DEV_ROOT}/jd-environments` : 'C:/JnJ/Developments/jd-environments';
     return loadJson(`${settingsPath}/Apis/github.json`)[userName];
   } else if (src === 'github') {  // ~/.bashrc { owner, repo, token } ENV_GIT_OWNER, ENV_GIT_REPO, ENV_GIT_TOKEN
+    console.log(`#### ENV_GITHUB_OWNER: ${process.env.ENV_GITHUB_OWNER}`);
+    console.log(`#### ENV_GITHUB_REPO: ${process.env.ENV_GITHUB_REPO}`);
+    console.log(`#### ENV_GITHUB_TOKEN: ${process.env.ENV_GITHUB_TOKEN}`);
     const options = {
       owner: process.env.ENV_GITHUB_OWNER || '',
       repo: process.env.ENV_GITHUB_REPO || '',
