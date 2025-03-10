@@ -40,6 +40,8 @@ const findGithubAccount = (userName: string, src = 'local'): any => {
   if (src === 'local') {
     return loadJson(`${localEnvRoot}/Apis/github.json`)[userName];
   } else if (src === 'github') {
+    console.log(`#### githubEnv: ${JSON.stringify(githubEnv)}`);
+    console.log(`#### readJsonFromGithub: ${JSON.stringify(readJsonFromGithub('Apis/github.json', githubEnv))}`);
     return readJsonFromGithub('Apis/github.json', githubEnv)[userName];
   }
 };

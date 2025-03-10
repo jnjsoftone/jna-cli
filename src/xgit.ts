@@ -3,10 +3,10 @@ import { Octokit } from '@octokit/rest';
 import yargs from 'yargs';
 import { execSync } from 'child_process';
 import { loadJson } from 'jnu-abc';
-// import { readJsonFromGithub } from 'jnu-cloud';
+import { readJsonFromGithub } from 'jnu-cloud';
 import {
   findAllRepos,
-  findGithubAccount,
+  // findGithubAccount,
   createRemoteRepo,
   setLocalConfig,
   cloneRepo,
@@ -19,6 +19,7 @@ import {
   removeRepo,
 } from './git.js';
 import { getCurrentDir } from './cli.js';
+import { githubEnv, localEnvRoot } from './env.js';
 
 // & Types AREA
 // &---------------------------------------------------------------------------
@@ -80,6 +81,16 @@ function getLocalPath(repoName: string) {
   }
   return localPath;
 }
+
+const findGithubAccount = (userName: string, src = 'local'): any => {
+  if (src === 'local') {
+    return loadJson(`${localEnvRoot}/Apis/github.json`)[userName];
+  } else if (src === 'github') {
+    console.log(`#### githubEnv: ${JSON.stringify(githubEnv)}`);
+    console.log(`#### readJsonFromGithub: ${JSON.stringify(readJsonFromGithub('Apis/github.json', githubEnv))}`);
+    return readJsonFromGithub('Apis/github.json', githubEnv)[userName];
+  }
+};
 
 // * github account setup
 (async () => {
