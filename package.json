@@ -1,6 +1,6 @@
 {
   "name": "jna-cli",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Jnjsoft Nodejs App for cli(Command Line Interface) With xgit, xcli, xweb, ... in Typescript",
   "author": "JnJ One <jnjsoft.one@gmail.com>",
   "main": "./cjs/index.js",
