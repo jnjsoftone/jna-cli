@@ -40,13 +40,14 @@ const findGithubAccount = async (userName: string, src = 'local'): Promise<any> 
   if (src === 'local') {
     return loadJson(`${localEnvRoot}/Apis/github.json`)[userName];
   } else if (src === 'github') {
-    console.log(`@@@ githubEnv: ${JSON.stringify(githubEnv)}`);
-    console.log(
-      `@@@ readJsonFromGithub('Apis/github.json': ${JSON.stringify(
-        await readJsonFromGithub('Apis/github.json', githubEnv)
-      )}`
-    );
-    return await readJsonFromGithub('Apis/github.json', githubEnv)[userName];
+    // console.log(`@@@ githubEnv: ${JSON.stringify(githubEnv)}`);
+    // console.log(
+    //   `@@@ readJsonFromGithub('Apis/github.json': ${JSON.stringify(
+    //     await readJsonFromGithub('Apis/github.json', githubEnv)
+    //   )}`
+    // );
+    const res: any = await readJsonFromGithub('Apis/github.json', githubEnv);
+    return res[userName];
   }
 };
 
