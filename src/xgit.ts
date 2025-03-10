@@ -97,13 +97,14 @@ function getLocalPath(repoName: string) {
   try {
     const account = await findGithubAccount(options.userName ?? '', 'github');
     account.userName = options.userName ?? '';
-    console.log(`#### git account: ${JSON.stringify(account)}`);
+    console.log(`@@@ git account: ${JSON.stringify(account)}`);
     const octokit = new Octokit({ auth: account.token });
     const localPath = getLocalPath(options.repoName ?? '') ?? '';
     let result: any;
 
     // * exec
     switch (options.exec) {
+      case 'list':
       case 'listRepos':
         try {
           result = await findAllRepos(octokit);
@@ -112,6 +113,7 @@ function getLocalPath(repoName: string) {
           console.error('저장소 목록 조회 중 오류 발생:', error);
         }
         break;
+      case 'create':
       case 'createRemoteRepo':
         console.log(`createRemoteRepo: ${options}`);
         await createRemoteRepo(octokit, {
@@ -120,6 +122,7 @@ function getLocalPath(repoName: string) {
           isPrivate: options.isPrivate ?? false,
         });
         break;
+      case 'del':
       case 'deleteRemoteRepo':
         await deleteRemoteRepo(
           octokit,
@@ -139,6 +142,7 @@ function getLocalPath(repoName: string) {
           localPath
         );
         break;
+      case 'clone':
       case 'cloneRepo':
         cloneRepo(
           {
@@ -159,6 +163,7 @@ function getLocalPath(repoName: string) {
           localPath
         );
         break;
+      case 'init':
       case 'initRepo':
         console.log('====initRepo');
         await initRepo(
@@ -172,6 +177,7 @@ function getLocalPath(repoName: string) {
           localPath
         );
         break;
+      case 'push':
       case 'pushRepo':
         pushRepo(
           {
@@ -182,6 +188,7 @@ function getLocalPath(repoName: string) {
           localPath
         );
         break;
+      case 'copy':
       case 'copyRepo':
         copyRepo(
           {
@@ -193,6 +200,7 @@ function getLocalPath(repoName: string) {
           localPath
         );
         break;
+      case 'make':
       case 'makeRepo':
         await makeRepo(
           octokit,
@@ -205,6 +213,7 @@ function getLocalPath(repoName: string) {
           localPath
         );
         break;
+      case 'remove':
       case 'removeRepo':
         await removeRepo(octokit, { name: options.repoName ?? '' }, account, localPath);
         break;
