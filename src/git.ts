@@ -37,9 +37,12 @@ import type { GithubAccount, RepoOptions } from './types.js';
  */
 const findGithubAccount = (userName: string, src = 'local'): any => {
   if (src === 'local') {
-    const settingsPath = process.env.DEV_ROOT ? `${process.env.DEV_ROOT}/jd-environments` : 'C:/JnJ/Developments/jd-environments';
+    const settingsPath = process.env.DEV_ROOT
+      ? `${process.env.DEV_ROOT}/jd-environments`
+      : 'C:/JnJ/Developments/jd-environments';
     return loadJson(`${settingsPath}/Apis/github.json`)[userName];
-  } else if (src === 'github') {  // ~/.bashrc { owner, repo, token } ENV_GIT_OWNER, ENV_GIT_REPO, ENV_GIT_TOKEN
+  } else if (src === 'github') {
+    // ~/.bashrc { owner, repo, token } ENV_GIT_OWNER, ENV_GIT_REPO, ENV_GIT_TOKEN
     console.log(`#### ENV_GITHUB_OWNER: ${process.env.ENV_GITHUB_OWNER}`);
     console.log(`#### ENV_GITHUB_REPO: ${process.env.ENV_GITHUB_REPO}`);
     console.log(`#### ENV_GITHUB_TOKEN: ${process.env.ENV_GITHUB_TOKEN}`);
@@ -48,7 +51,7 @@ const findGithubAccount = (userName: string, src = 'local'): any => {
       repo: process.env.ENV_GITHUB_REPO || '',
       token: process.env.ENV_GITHUB_TOKEN || '',
     };
-    return readJsonFromGithub('Apis/github.json', options)[userName]
+    return readJsonFromGithub('Apis/github.json', options)[userName];
   }
 };
 
