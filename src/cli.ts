@@ -1,5 +1,6 @@
 import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import Path from 'path';
+import { copyFolderToLocal } from 'jnu-cloud';
 import {
   PLATFORM,
   sleep,
@@ -19,15 +20,13 @@ import {
   substituteInFile,
 } from 'jnu-abc';
 import { findGithubAccount } from './git.js';
+import { githubEnv } from './env.js';
 import type { ExecResult, ExecResults, CliOptions } from './types.js';
 import fs from 'fs';
 
 // & Variables AREA
 // &---------------------------------------------------------------------------
-// const TEMPLATES_ROOT = `${process.env.DEV_ROOT}/jd-environments/Templates` ?? 'C:/JnJ/Developments/jd-environments/Templates';
-const TEMPLATES_ROOT = process.env.DEV_ROOT
-  ? `${process.env.DEV_ROOT}/jd-environments/Templates`
-  : 'C:/JnJ/Developments/jd-environments/Templates';
+const TEMPLATES_FOLDER = 'jd-environments/Templates';
 
 // Windows 실행 옵션에 코드페이지 변경 명령 추가
 const execOptions: ExecSyncOptionsWithStringEncoding = {
@@ -133,8 +132,9 @@ const exe = (cmds: string[]): ExecResults => {
 // &---------------------------------------------------------------------------
 /**
  * TypeScript App 초기화
+ * src: template 출처(github, local)
  */
-const initTsApp = (options: any, platform: string = PLATFORM) => {
+const initTsApp = async (options: any, platform: string = PLATFORM, src = 'github') => {
   const { template, repoName, userName, description } = options;
   const { fullName, email } = findGithubAccount(userName ?? '');
   const parentDir = getParentDir();
@@ -142,12 +142,20 @@ const initTsApp = (options: any, platform: string = PLATFORM) => {
 
   let cmd = '';
 
-  if (platform === 'win') {
-    cmd = `xcopy "${TEMPLATES_ROOT}\\${template}" "${repoName}\\" /E /I /H /Y`;
-    execSync(cmd, execOptions);
-  } else {
-    cmd = `cp -r ${TEMPLATES_ROOT}/${template} ${repoName}`;
-    execSync(cmd, execOptions);
+  if (src === 'github') {
+    // github에서 템플릿 복사
+    await copyFolderToLocal(TEMPLATES_FOLDER, repoName, githubEnv);
+  } else if (src === 'local') {
+    const TEMPLATES_ROOT = process.env.DEV_ROOT
+      ? `${process.env.DEV_ROOT}/${TEMPLATES_FOLDER}`
+      : 'C:/JnJ/Developments/jd-environments/Templates';
+    if (platform === 'win') {
+      cmd = `xcopy "${TEMPLATES_ROOT}\\${template}" "${repoName}\\" /E /I /H /Y`;
+      execSync(cmd, execOptions);
+    } else {
+      cmd = `cp -r ${TEMPLATES_ROOT}/${template} ${repoName}`;
+      execSync(cmd, execOptions);
+    }
   }
 
   // * 파일 치환
@@ -221,7 +229,7 @@ const removeApp = (options: any) => {
 /**
  * 템플릿 기반 앱 초기화
  */
-const initApp = (options: any) => {
+const initApp = async (options: any) => {
   const { template, repoName, userName, description } = options;
 
   switch (template) {
@@ -229,7 +237,7 @@ const initApp = (options: any) => {
       break;
     case 'ts-swc-npm':
     case 'ts-webpack-obsidianPlugin':
-      initTsApp(options);
+      await initTsApp(options);
       break;
     case 'python-pipenv':
       break;
@@ -461,20 +469,7 @@ const tree = (excluded: string): string => {
 
 // & Export AREA
 // &---------------------------------------------------------------------------
-export {
-  TEMPLATES_ROOT,
-  PLATFORM,
-  execOptions,
-  exec,
-  exe,
-  getParentDir,
-  getCurrentDir,
-  initApp,
-  removeApp,
-  zip,
-  tree,
-  unzip,
-};
+export { PLATFORM, execOptions, exec, exe, getParentDir, getCurrentDir, initApp, removeApp, zip, tree, unzip };
 
 // & Test AREA
 // &---------------------------------------------------------------------------

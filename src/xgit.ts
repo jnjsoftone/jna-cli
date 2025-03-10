@@ -3,10 +3,10 @@ import { Octokit } from '@octokit/rest';
 import yargs from 'yargs';
 import { execSync } from 'child_process';
 import { loadJson } from 'jnu-abc';
-import { readJsonFromGithub } from 'jnu-cloud';
+// import { readJsonFromGithub } from 'jnu-cloud';
 import {
   findAllRepos,
-  // findGithubAccount,
+  findGithubAccount,
   createRemoteRepo,
   setLocalConfig,
   cloneRepo,
@@ -81,31 +81,12 @@ function getLocalPath(repoName: string) {
   return localPath;
 }
 
-const findGithubAccount = async (userName: string, src = 'github'): Promise<any> => {
-  if (src === 'local') {
-    const settingsPath = process.env.DEV_ROOT ? `${process.env.DEV_ROOT}/jd-environments` : 'C:/JnJ/Developments/jd-environments';
-    return loadJson(`${settingsPath}/Apis/github.json`)[userName];
-  } else if (src === 'github') {  // ~/.bashrc { owner, repo, token } ENV_GIT_OWNER, ENV_GIT_REPO, ENV_GIT_TOKEN
-    console.log(`#### ENV_GITHUB_OWNER: ${process.env.ENV_GITHUB_OWNER}`);
-    console.log(`#### ENV_GITHUB_REPO: ${process.env.ENV_GITHUB_REPO}`);
-    console.log(`#### ENV_GITHUB_TOKEN: ${process.env.ENV_GITHUB_TOKEN}`);
-    const options = {
-      owner: process.env.ENV_GITHUB_OWNER || '',
-      repo: process.env.ENV_GITHUB_REPO || '',
-      token: process.env.ENV_GITHUB_TOKEN || '',
-    };
-    const result:any = await readJsonFromGithub('Apis/github.json', options);
-    console.log(`@@@@ readJsonFromGithub: ${JSON.stringify(result)}`);
-    return result[userName]
-  }
-};
-
 // * github account setup
 (async () => {
   try {
     const account = await findGithubAccount(options.userName ?? '', 'github');
     account.userName = options.userName ?? '';
-    console.log(`#### git account: ${JSON.stringify(account)}`);
+    // console.log(`#### git account: ${JSON.stringify(account)}`);
     const octokit = new Octokit({ auth: account.token });
     const localPath = getLocalPath(options.repoName ?? '') ?? '';
     let result: any;
@@ -161,7 +142,7 @@ const findGithubAccount = async (userName: string, src = 'github'): Promise<any>
         initLocalRepo(
           {
             name: options.repoName ?? '',
-            description: options.description ?? ''
+            description: options.description ?? '',
           },
           account,
           localPath
