@@ -163,7 +163,7 @@ function getLocalPath(repoName: string) {
           localPath
         );
         break;
-      case 'init':
+      // case 'init':
       case 'initRepo':
         console.log('====initRepo');
         await initRepo(

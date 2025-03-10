@@ -104,14 +104,17 @@ const setLocalConfig = (options: RepoOptions, account: GithubAccount, localPath:
 /**
  * 로컬 저장소 초기화
  */
-const initLocalRepo = (options: RepoOptions, account: GithubAccount, localPath: string) => {
+const initLocalRepo = async (options: RepoOptions, account: GithubAccount, localPath: string) => {
   const { name } = options;
   const { fullName, email, token, userName } = account;
 
   let cmd = `cd ${localPath} && git init`;
+  console.log(cmd);
   execSync(cmd);
+  sleep(10);
   try {
     cmd = `git branch -m master main`; // 기본 브랜치 이름 변경(master -> main)
+    console.log(cmd);
     execSync(cmd);
   } catch (error) {
     console.log('####@@@@@===== error: ', error);
@@ -190,7 +193,7 @@ const pushRepo = (options: RepoOptions, account: GithubAccount, localPath: strin
 /**
  * 새 저장소 생성 및 초기 커밋
  */
-const makeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => {
+const makeRepo = async (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => {
   // // 빈 저장소 생성
   // createRemoteRepo(octokit, options);
   console.log('####@@@@@===== makeRepo options: ', JSON.stringify(options));
@@ -201,7 +204,7 @@ const makeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccount
   // 로컬 저장소 초기화
   console.log(`=================== initLocalRepo: ${localPath}`);
   initLocalRepo(options, account, localPath);
-  sleep(5);
+  sleep(10);
   // 초기 커밋 및 푸시
   console.log(`=================== pushRepo: ${localPath}`);
   pushRepo(options, account, localPath);
