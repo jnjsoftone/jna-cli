@@ -82,7 +82,7 @@ function getLocalPath(repoName: string) {
   return localPath;
 }
 
-const findGithubAccount = (userName: string, src = 'local'): any => {
+const findGithubAccount = (userName: string, src = 'github'): any => {
   if (src === 'local') {
     return loadJson(`${localEnvRoot}/Apis/github.json`)[userName];
   } else if (src === 'github') {
@@ -97,7 +97,7 @@ const findGithubAccount = (userName: string, src = 'local'): any => {
   try {
     const account = await findGithubAccount(options.userName ?? '', 'github');
     account.userName = options.userName ?? '';
-    // console.log(`#### git account: ${JSON.stringify(account)}`);
+    console.log(`#### git account: ${JSON.stringify(account)}`);
     const octokit = new Octokit({ auth: account.token });
     const localPath = getLocalPath(options.repoName ?? '') ?? '';
     let result: any;
