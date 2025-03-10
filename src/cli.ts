@@ -136,7 +136,7 @@ const exe = (cmds: string[]): ExecResults => {
  */
 const initTsApp = async (options: any, platform: string = PLATFORM, src = 'github') => {
   const { template, repoName, userName, description } = options;
-  const { fullName, email } = findGithubAccount(userName ?? '');
+  const { fullName, email } = await findGithubAccount(userName ?? '');
   const parentDir = getParentDir();
   const currentDir = getCurrentDir();
 

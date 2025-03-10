@@ -36,15 +36,17 @@ import type { GithubAccount, RepoOptions } from './types.js';
  * const account = findGithubAccount('username');
  * ```
  */
-const findGithubAccount = (userName: string, src = 'local'): any => {
+const findGithubAccount = async (userName: string, src = 'local'): Promise<any> => {
   if (src === 'local') {
     return loadJson(`${localEnvRoot}/Apis/github.json`)[userName];
   } else if (src === 'github') {
     console.log(`@@@ githubEnv: ${JSON.stringify(githubEnv)}`);
     console.log(
-      `@@@ readJsonFromGithub('Apis/github.json': ${JSON.stringify(readJsonFromGithub('Apis/github.json', githubEnv))}`
+      `@@@ readJsonFromGithub('Apis/github.json': ${JSON.stringify(
+        await readJsonFromGithub('Apis/github.json', githubEnv)
+      )}`
     );
-    return readJsonFromGithub('Apis/github.json', githubEnv)[userName];
+    return await readJsonFromGithub('Apis/github.json', githubEnv)[userName];
   }
 };
 
