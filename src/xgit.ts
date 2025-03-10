@@ -202,7 +202,7 @@ function getLocalPath(repoName: string) {
         break;
       case 'make':
       case 'makeRepo':
-        await makeRepo(
+        makeRepo(
           octokit,
           {
             name: options.repoName ?? '',
