@@ -166,25 +166,25 @@ const copyRepo = (options: RepoOptions, account: GithubAccount, localPath: strin
  * 저장소에 변경사항 푸시
  */
 const pushRepo = (options: RepoOptions, account: GithubAccount, localPath: string) => {
-  execSync(`cd ${localPath}`);
+  // execSync(`cd ${localPath}`);
 
   // 변경사항이 있는지 확인
-  const status = execSync('git status --porcelain', { encoding: 'utf8' });
+  const status = execSync(`cd ${localPath} && git status --porcelain`, { encoding: 'utf8' });
 
   // 변경사항이 있으면 커밋
   if (status.length > 0) {
-    const cmd = `git add . && git commit -m "Initial commit"`;
+    const cmd = `cd ${localPath} && git add . && git commit -m "Initial commit"`;
     console.log('#### ', cmd);
     execSync(cmd);
   }
 
-  const branches = execSync('git branch');
+  const branches = execSync(`cd ${localPath} && git branch`);
   console.log(`#### pushRepo branches: ${branches}`);
 
   if (branches.includes('main')) {
-    execSync('git push -u origin main --force');
+    execSync(`cd ${localPath} && git push -u origin main --force`);
   } else if (branches.includes('master')) {
-    execSync('git push -u origin master --force');
+    execSync(`cd ${localPath} && git push -u origin master --force`);
   } else {
     console.log('main 또는 master 브랜치가 없습니다.');
   }
@@ -204,7 +204,7 @@ const makeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccount
   // 로컬 저장소 초기화
   console.log(`=================== initLocalRepo: ${localPath}`);
   initLocalRepo(options, account, localPath);
-  sleep(5);
+  sleep(15);
   // 초기 커밋 및 푸시
   console.log(`=================== pushRepo: ${localPath}`);
   pushRepo(options, account, localPath);
