@@ -751,7 +751,7 @@ declare const setLocalConfig: (options: RepoOptions, account: GithubAccount, loc
 /**
  * 로컬 저장소 초기화
  */
-declare const initLocalRepo: (options: RepoOptions, account: GithubAccount, localPath: string) => void;
+declare const initLocalRepo: (options: RepoOptions, account: GithubAccount, localPath: string) => Promise<void>;
 /**
  * 저장소 복제
  */
@@ -771,7 +771,7 @@ declare const pushRepo: (options: RepoOptions, account: GithubAccount, localPath
 /**
  * 새 저장소 생성 및 초기 커밋
  */
-declare const makeRepo: (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => void;
+declare const makeRepo: (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => Promise<void>;
 /**
  * 로컬 + 원격 저장소 삭제
  */
