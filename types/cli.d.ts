@@ -2,7 +2,6 @@
 import { ExecSyncOptionsWithStringEncoding } from 'child_process';
 import { PLATFORM } from 'jnu-abc';
 import type { ExecResult, ExecResults } from './types.js';
-declare const TEMPLATES_ROOT: string;
 declare const execOptions: ExecSyncOptionsWithStringEncoding;
 /**
  * 현재 디렉토리 경로 반환
@@ -44,7 +43,7 @@ declare const removeApp: (options: any) => any;
 /**
  * 템플릿 기반 앱 초기화
  */
-declare const initApp: (options: any) => any;
+declare const initApp: (options: any) => Promise<any>;
 /**
  * 로컬 프로젝트 압축
  */
@@ -66,5 +65,5 @@ declare const unzip: (folderPath: string, excluded?: string) => string;
  * 프로젝트 구조 분석
  */
 declare const tree: (excluded: string) => string;
-export { TEMPLATES_ROOT, PLATFORM, execOptions, exec, exe, getParentDir, getCurrentDir, initApp, removeApp, zip, tree, unzip, };
+export { PLATFORM, execOptions, exec, exe, getParentDir, getCurrentDir, initApp, removeApp, zip, tree, unzip };
 //# sourceMappingURL=cli.d.ts.map
