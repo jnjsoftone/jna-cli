@@ -771,7 +771,7 @@ declare const pushRepo: (options: RepoOptions, account: GithubAccount, localPath
 /**
  * 새 저장소 생성 및 초기 커밋
  */
-declare const makeRepo: (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => Promise<void>;
+declare const makeRepo: (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => void;
 /**
  * 로컬 + 원격 저장소 삭제
  */
