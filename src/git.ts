@@ -112,7 +112,7 @@ const initLocalRepo = async (options: RepoOptions, account: GithubAccount, local
   let cmd = `cd ${localPath} && chmod 777 -R ${localPath} && git init && git config --global --add safe.directory ${localPath}`;
   console.log(cmd);
   execSync(cmd);
-  sleep(10);
+  sleep(5);
   try {
     cmd = `cd ${localPath} && git branch -m master main`; // 기본 브랜치 이름 변경(master -> main)
     console.log(cmd);
@@ -120,6 +120,7 @@ const initLocalRepo = async (options: RepoOptions, account: GithubAccount, local
   } catch (error) {
     console.log('####@@@@@===== error: ', error);
   }
+  sleep(2);
   cmd = `cd ${localPath} && git config user.name "${fullName}"`;
   cmd += ` && git config user.email "${email}"`;
   cmd += ` && git remote add origin https://${token}@github.com/${userName}/${name}.git`;
