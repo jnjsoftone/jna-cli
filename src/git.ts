@@ -108,7 +108,8 @@ const initLocalRepo = async (options: RepoOptions, account: GithubAccount, local
   const { name } = options;
   const { fullName, email, token, userName } = account;
 
-  let cmd = `cd ${localPath} && git init`;
+  // let cmd = `cd ${localPath} && git init`;
+  let cmd = `cd ${localPath} && chmod 777 -R ${localPath} && git init && git config --global --add safe.directory ${localPath}`;
   console.log(cmd);
   execSync(cmd);
   sleep(10);
