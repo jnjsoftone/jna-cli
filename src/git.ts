@@ -32,13 +32,13 @@ const exec = (cmd: string, options: any = {}) => {
   let { wait = 0, msg = '', echo = true } = options;
   if (echo) {
     msg = msg || cmd;
-    console.log(`command: ${msg}`);
+    console.log(`Command: ${msg}`);
   }
   try {
     execSync(cmd);
     sleep(wait);
   } catch (error) {
-    console.log('exec error: ', error);
+    console.log('EXEC Error: ', error);
   }
 };
 
@@ -80,12 +80,7 @@ const findAllRepos = async (octokit: Octokit) => {
 const createRemoteRepo = (octokit: Octokit, options: RepoOptions) => {
   console.log('####@@@@@ createRemoteRepo options: ', options);
   const { name, description, isPrivate } = options;
-  // console.log('####@@@@@===== private: ', isPrivate);
-  // const defaults = {
-  //   auto_init: true,
-  //   private: isPrivate,
-  //   license_template: 'MIT',
-  // };
+
   return octokit.rest.repos.createForAuthenticatedUser({
     name,
     description,
@@ -113,8 +108,7 @@ const setLocalConfig = (options: RepoOptions, account: GithubAccount, localPath:
   let cmd = `cd ${localPath} && git config user.name "${account.fullName}"`;
   cmd += ` && git config user.email "${account.email}"`;
   cmd += ` && git remote set-url origin https://${account.token}@github.com/${account.userName}/${options.name}.git`;
-  console.log(cmd);
-  execSync(cmd);
+  exec(cmd)
 };
 
 /**
@@ -152,8 +146,7 @@ const cloneRepo = (options: RepoOptions, account: GithubAccount, localPath: stri
   const cmd = `cd ${Path.dirname(localPath)} && git clone https://${account.token}@github.com/${account.userName}/${
     options.name
   }.git`;
-  console.log(cmd);
-  execSync(cmd);
+  exec(cmd);
 };
 
 /**
@@ -162,9 +155,7 @@ const cloneRepo = (options: RepoOptions, account: GithubAccount, localPath: stri
 const initRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => {
   // createRemoteRepo(octokit, options); // !! 원격 저장소 생성 안됨
   let cmd = `xgit -e createRemoteRepo -u ${account.userName} -n ${options.name} -d "${options.description}" -p ${options.isPrivate}`;
-  console.log(`initRepo cmd: ${cmd}`);
-  execSync(cmd);
-  sleep(10);
+  exec(cmd, {wait: 10, msg: `initRepo ${cmd}`});
   cloneRepo(options, account, localPath);
   sleep(5);
   setLocalConfig(options, account, localPath);
@@ -183,25 +174,22 @@ const copyRepo = (options: RepoOptions, account: GithubAccount, localPath: strin
  * 저장소에 변경사항 푸시
  */
 const pushRepo = (options: RepoOptions, account: GithubAccount, localPath: string) => {
-  // execSync(`cd ${localPath}`);
-
   // 변경사항이 있는지 확인
   const status = execSync(`cd ${localPath} && git status --porcelain`, { encoding: 'utf8' });
 
   // 변경사항이 있으면 커밋
   if (status.length > 0) {
     const cmd = `cd ${localPath} && git add . && git commit -m "Initial commit"`;
-    console.log('#### ', cmd);
-    execSync(cmd);
+    exec(cmd, {msg: `pushRepo ${cmd}`});
   }
 
   const branches = execSync(`cd ${localPath} && git branch`);
   console.log(`#### pushRepo branches: ${branches}`);
 
   if (branches.includes('main')) {
-    execSync(`cd ${localPath} && git push -u origin main --force`);
+    exec(`cd ${localPath} && git push -u origin main --force`);
   } else if (branches.includes('master')) {
-    execSync(`cd ${localPath} && git push -u origin master --force`);
+    exec(`cd ${localPath} && git push -u origin master --force`);
   } else {
     console.log('main 또는 master 브랜치가 없습니다.');
   }
@@ -215,9 +203,7 @@ const makeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccount
   // createRemoteRepo(octokit, options);
   console.log('####@@@@@===== makeRepo options: ', JSON.stringify(options));
   let cmd = `xgit -e createRemoteRepo -u ${account.userName} -n ${options.name} -d "${options.description}" -p ${options.isPrivate}`;
-  console.log(`initRepo cmd: ${cmd}`);
-  execSync(cmd);
-  sleep(10);
+  exec(cmd, {wait: 10});
   // 로컬 저장소 초기화
   console.log(`=================== initLocalRepo: ${localPath}`);
   initLocalRepo(options, account, localPath);
@@ -239,19 +225,16 @@ const removeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccou
     // Windows에서는 각 명령어를 개별적으로 실행
     try {
       const cdCmd = `cd ${Path.dirname(localPath)}`;
-      console.log(cdCmd);
-      execSync(cdCmd);
+      exec(cdCmd);
 
       const rmCmd = `rmdir /s /q ${name}`;
-      console.log(rmCmd);
-      execSync(rmCmd);
+      exec(rmCmd);
     } catch (error) {
       console.error('Failed to remove directory:', error);
       // 실패 시 대체 방법 시도
       try {
         const altCmd = `rd /s /q "${localPath}"`;
-        console.log('Trying alternative command:', altCmd);
-        execSync(altCmd);
+        exec(altCmd);
       } catch (err) {
         console.error('Alternative removal also failed:', err);
       }
@@ -259,8 +242,7 @@ const removeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccou
   } else {
     // Unix 계열은 한 번에 실행
     const cmd = `cd ${Path.dirname(localPath)} && rm -rf ${name}`;
-    console.log(cmd);
-    execSync(cmd);
+    exec(cmd);
   }
 };
 
