@@ -14,7 +14,7 @@ import type { GithubAccount, RepoOptions } from './types.js';
  * const account = findGithubAccount('username');
  * ```
  */
-declare const findGithubAccount: (userName: string, src?: string) => Promise<any>;
+declare const findGithubAccount: (userName: string, src?: string) => Promise<GithubAccount | undefined>;
 /**
  * 모든 저장소 목록 조회
  */

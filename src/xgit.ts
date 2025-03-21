@@ -96,8 +96,15 @@ function getLocalPath(repoName: string) {
 (async () => {
   try {
     const account = await findGithubAccount(options.userName ?? '', 'github');
-    account.userName = options.userName ?? '';
+    if (!account) {
+      console.error('GitHub 계정 정보를 찾을 수 없습니다.');
+      process.exit(1);
+    }
+
+    // GitHub 계정 정보 설정
+    account.userName = options.userName ?? account.userName;
     console.log(`@@@ git account: ${JSON.stringify(account)}`);
+    
     const octokit = new Octokit({ auth: account.token });
     const localPath = getLocalPath(options.repoName ?? '') ?? '';
     let result: any;
