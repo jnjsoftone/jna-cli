@@ -136,7 +136,27 @@ const exe = (cmds: string[]): ExecResults => {
  */
 const initTsApp = async (options: any, platform: string = PLATFORM, src = 'github') => {
   const { template, repoName, userName, description } = options;
-  const { fullName, email } = await findGithubAccount(userName ?? '');
+  
+  // GitHub 계정 정보를 환경변수에서 가져오기
+  let fullName = '', email = '';
+  try {
+    // 먼저 findGithubAccount로 시도
+    const githubAccount = await findGithubAccount(userName ?? '');
+    if (githubAccount) {
+      fullName = githubAccount.fullName;
+      email = githubAccount.email;
+    } else {
+      // 환경변수에서 직접 가져오기
+      fullName = process.env.ENV_GITHUB_OWNER ?? userName ?? '';
+      email = process.env.ENV_GITHUB_EMAIL ?? '';
+      console.log('환경변수에서 GitHub 계정 정보를 가져왔습니다.');
+    }
+  } catch (error) {
+    console.log('GitHub 계정 정보 조회 중 오류가 발생했습니다. 환경변수를 사용합니다:', error);
+    fullName = process.env.ENV_GITHUB_OWNER ?? userName ?? '';
+    email = process.env.ENV_GITHUB_EMAIL ?? '';
+  }
+
   const parentDir = getParentDir();
   const currentDir = getCurrentDir();
 
