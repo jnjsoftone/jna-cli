@@ -182,22 +182,12 @@ const initTsApp = async (options: any, platform: string = PLATFORM, src = 'githu
     substituteInFile(file, replacements);
   }
 
-  for (const pf of ['win', 'mac']) {
-    substitutePublishFile(repoName, pf, replacements);
+  // ** publish file 설정
+  if (!template.includes('simple')) {
+    for (const pf of ['win', 'mac']) {
+      substitutePublishFile(repoName, pf, replacements);
+    }
   }
-
-  // // * .env.${platform} 파일 존재 시 publish.bat/sh 파일 내용 치환
-  // const env = loadEnv(`${repoName}/.env.${platform}`)
-  // console.log(`@@@@ env: ${JSON.stringify(env)}`);
-  // if (env) {
-  //   const publishFile = platform === 'win' ? 'publish.bat' : 'publish.sh';
-  //   const replacements2 = Object.entries(env).map(([key, value]) => ({
-  //   [`{{${key}}}`]: String(value)
-  //   })).reduce<Record<string, string>>((acc, curr) => ({ ...acc, ...curr }), {});
-  //   console.log(`@@@@ replacements2: ${JSON.stringify(replacements2)}, @@@ file: ${publishFile}`);
-
-  //   substituteInFile(`${repoName}/${publishFile}`, { ...replacements, ...replacements2 });
-  // }
 
   // * 패키지 설치
   cmd = `cd ${currentDir}/${repoName} && npm install`;
@@ -236,6 +226,7 @@ const initApp = async (options: any) => {
     case 'node-simple':
       break;
     case 'ts-swc-npm':
+    case 'ts-swc-simple':
     case 'ts-webpack-obsidianPlugin':
       await initTsApp(options);
       break;
