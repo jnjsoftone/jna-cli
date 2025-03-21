@@ -26,6 +26,22 @@ import type { GithubAccount, RepoOptions } from './types.js';
 
 // & Functions AREA
 // &---------------------------------------------------------------------------
+
+const exec = (cmd: string, options: any = {}) => {
+  // 기본값 설정 및 객체 구조 분해
+  let { wait = 0, msg = '', echo = true } = options;
+  if (echo) {
+    msg = msg || cmd;
+    console.log(`command: ${msg}`);
+  }
+  try {
+    execSync(cmd);
+    sleep(wait);
+  } catch (error) {
+    console.log('exec error: ', error);
+  }
+};
+
 /**
  * Github 계정 정보 조회
  * @param userName - Github 사용자명
@@ -108,26 +124,25 @@ const initLocalRepo = async (options: RepoOptions, account: GithubAccount, local
   const { name } = options;
   const { fullName, email, token, userName } = account;
 
-  // let cmd = `cd ${localPath} && git init`;
-  let cmd = `cd ${localPath} && chmod 777 -R ${localPath} && git init && git config --global --add safe.directory ${localPath}`;
-  console.log(cmd);
-  execSync(cmd);
-  sleep(5);
+  if (PLATFORM != 'win') {
+    exec(`cd ${localPath} && chmod 777 -R ${localPath}`, { wait: 1 });
+  }
+
+  let cmd = '';
+  exec(`cd ${localPath} && git init && git config --global --add safe.directory ${localPath}`, { wait: 1 });
+
   try {
-    cmd = `cd ${localPath} && git branch -m master main`; // 기본 브랜치 이름 변경(master -> main)
-    console.log(cmd);
-    execSync(cmd);
+    exec(`cd ${localPath} && git branch -m master main`, { wait: 2 });
   } catch (error) {
     console.log('####@@@@@===== error: ', error);
   }
-  sleep(2);
+
   cmd = `cd ${localPath} && git config user.name "${fullName}"`;
   cmd += ` && git config user.email "${email}"`;
   cmd += ` && git remote add origin https://${token}@github.com/${userName}/${name}.git`;
   // cmd += ` && git remote set-url origin https://${account.token}@github.com/${account.userName}/${options.name}.git`;
   cmd += ` && git add . && git commit -m "Initial commit"`;
-  console.log(cmd);
-  execSync(cmd);
+  exec(cmd, { wait: 10 });
 };
 
 /**
