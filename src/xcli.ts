@@ -127,8 +127,12 @@ const saveResult = (
         console.log(`${JSON.stringify(result)}`);
       }
       break;
+    case '':
+      // 타입이 지정되지 않은 경우 결과만 출력
+      console.log(result ? JSON.stringify(result) : '작업이 완료되었습니다.');
+      break;
     default:
-      console.log(`save type is not supported: ${type}`);
+      console.log(`지원하지 않는 저장 타입입니다: ${type}`);
   }
 };
 
