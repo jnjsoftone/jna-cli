@@ -143,8 +143,10 @@ const initTsApp = async (options: any, platform: string = PLATFORM, src = 'githu
   let cmd = '';
 
   if (src === 'github') {
-    // github에서 템플릿 복사
-    await copyFolderToLocal(TEMPLATES_FOLDER, repoName, githubEnv);
+    // github에서 템플릿 복사 (Templates/repoName, repoName)
+    // await copyFolderToLocal(TEMPLATES_FOLDER.split('/'), repoName, githubEnv);
+    console.log(`### Copy from Github to Local: Templates/${template} => ${repoName}`)
+    await copyFolderToLocal(`Templates/${template}`, repoName, githubEnv);
   } else if (src === 'local') {
     const TEMPLATES_ROOT = process.env.DEV_ROOT
       ? `${process.env.DEV_ROOT}/${TEMPLATES_FOLDER}`
