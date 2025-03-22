@@ -53,25 +53,22 @@ const exec = (cmd: string, options: any = {}) => {
  * ```
  */
 const findGithubAccount = async (userName: string, src = 'github'): Promise<GithubAccount | undefined> => {
-  try {
-    // 환경변수에서 직접 가져오기 시도
-    if (process.env.ENV_GITHUB_OWNER && process.env.ENV_GITHUB_TOKEN) {
-      return {
-        userName: process.env.ENV_GITHUB_OWNER,
-        fullName: process.env.ENV_GITHUB_OWNER,
-        email: process.env.ENV_GITHUB_EMAIL ?? '',
-        token: process.env.ENV_GITHUB_TOKEN,
-      };
-    }
+  const { ENV_GITHUB_OWNER, ENV_GITHUB_REPO, ENV_GITHUB_TOKEN } = process.env;
 
-    // 기존 방식으로 시도
+  const githubEnv = {
+    owner: process.env.ENV_GITHUB_OWNER || '',
+    repo: process.env.ENV_GITHUB_REPO || '',
+    token: process.env.ENV_GITHUB_TOKEN || '',
+  };
+
+  try {
     if (src === 'local') {
       const accounts = await loadJson(`${localEnvRoot}/Apis/github.json`);
       return accounts?.[userName];
     } else if (src === 'github') {
-      console.log(`### userName: ${userName}  githubEnv: ${JSON.stringify(githubEnv)}`);
-      const res: any = await readJsonFromGithub('Apis/github.json', githubEnv);
-      console.log(`### readJsonFromGithub: ${JSON.stringify(res)} res[userName]: ${res[userName]}`);
+      // console.log(`### userName: ${userName}  githubEnv: ${JSON.stringify(githubEnv)}`);
+      const res = await readJsonFromGithub('Apis/github.json', githubEnv);
+      // console.log(`### readJsonFromGithub: ${JSON.stringify(res)} res[userName]: ${res[userName]}`);
       return res?.[userName];
     }
     return undefined;
