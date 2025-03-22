@@ -205,7 +205,7 @@ const initTsApp = async (options: any, platform: string = PLATFORM, src = 'githu
   }
 
   // ** publish file 설정
-  if (!template.includes('simple')) {
+  if (template.includes('-npm') || template.includes('-webpack')) {
     for (const pf of ['win', 'mac']) {
       substitutePublishFile(repoName, pf, replacements);
     }
@@ -243,20 +243,29 @@ const removeApp = (options: any) => {
  */
 const initApp = async (options: any) => {
   const { template, repoName, userName, description } = options;
-
-  switch (template) {
-    case 'node-simple':
-      break;
-    case 'ts-swc-npm':
-    case 'ts-swc-simple':
-    case 'ts-webpack-obsidianPlugin':
-      await initTsApp(options);
-      break;
-    case 'python-pipenv':
-      break;
-    case 'flutter':
-      break;
+  if (template.includes('ts-') || template.includes('typescript-')) {
+    await initTsApp(options);
+  } else if (template.includes('python-') || template.includes('py-')) {
+    // await initPythonApp(options);
+  } else if (template.includes('flutter-')) {
+    // await initFlutterApp(options);
+  } else {
+    // await initNodeApp(options);
   }
+  //   switch (template) {
+  // switch (template) {
+  //   case 'node-simple':
+  //     break;
+  //   case 'ts-swc-npm':
+  //   case 'ts-swc-simple':
+  //   case 'ts-webpack-obsidianPlugin':
+  //     await initTsApp(options);
+  //     break;
+  //   case 'python-pipenv':
+  //     break;
+  //   case 'flutter':
+  //     break;
+  // }
   return options;
 };
 
