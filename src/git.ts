@@ -52,7 +52,7 @@ const exec = (cmd: string, options: any = {}) => {
  * const account = findGithubAccount('username');
  * ```
  */
-const findGithubAccount = async (userName: string, src = 'local'): Promise<GithubAccount | undefined> => {
+const findGithubAccount = async (userName: string, src = 'github'): Promise<GithubAccount | undefined> => {
   try {
     // 환경변수에서 직접 가져오기 시도
     if (process.env.ENV_GITHUB_OWNER && process.env.ENV_GITHUB_TOKEN) {
@@ -135,7 +135,7 @@ const setLocalConfig = (options: RepoOptions, account: GithubAccount, localPath:
   let cmd = `cd ${localPath} && git config user.name "${account.fullName}"`;
   cmd += ` && git config user.email "${account.email}"`;
   cmd += ` && git remote set-url origin https://${account.token}@github.com/${account.userName}/${options.name}.git`;
-  exec(cmd)
+  exec(cmd);
 };
 
 /**
@@ -182,7 +182,7 @@ const cloneRepo = (options: RepoOptions, account: GithubAccount, localPath: stri
 const initRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => {
   // createRemoteRepo(octokit, options); // !! 원격 저장소 생성 안됨
   let cmd = `xgit -e createRemoteRepo -u ${account.userName} -n ${options.name} -d "${options.description}" -p ${options.isPrivate}`;
-  exec(cmd, {wait: 10, msg: `initRepo ${cmd}`});
+  exec(cmd, { wait: 10, msg: `initRepo ${cmd}` });
   cloneRepo(options, account, localPath);
   sleep(5);
   setLocalConfig(options, account, localPath);
@@ -207,7 +207,7 @@ const pushRepo = (options: RepoOptions, account: GithubAccount, localPath: strin
   // 변경사항이 있으면 커밋
   if (status.length > 0) {
     const cmd = `cd ${localPath} && git add . && git commit -m "Initial commit"`;
-    exec(cmd, {msg: `pushRepo ${cmd}`});
+    exec(cmd, { msg: `pushRepo ${cmd}` });
   }
 
   const branches = execSync(`cd ${localPath} && git branch`);
@@ -230,7 +230,7 @@ const makeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccount
   // createRemoteRepo(octokit, options);
   console.log('####@@@@@===== makeRepo options: ', JSON.stringify(options));
   let cmd = `xgit -e createRemoteRepo -u ${account.userName} -n ${options.name} -d "${options.description}" -p ${options.isPrivate}`;
-  exec(cmd, {wait: 10});
+  exec(cmd, { wait: 10 });
   // 로컬 저장소 초기화
   console.log(`=================== initLocalRepo: ${localPath}`);
   initLocalRepo(options, account, localPath);
