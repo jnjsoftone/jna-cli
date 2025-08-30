@@ -748,6 +748,9 @@ declare const deleteRemoteRepo: (octokit: Octokit, options: RepoOptions, account
  * Git 설정 변경
  */
 declare const setLocalConfig: (options: RepoOptions, account: GithubAccount, localPath: string) => void;
+/**
+ * 로컬 저장소 초기화
+ */
 declare const initLocalRepo: (options: RepoOptions, account: GithubAccount, localPath: string) => Promise<void>;
 /**
  * 저장소 복제

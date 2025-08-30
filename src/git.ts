@@ -138,73 +138,31 @@ const setLocalConfig = (options: RepoOptions, account: GithubAccount, localPath:
 /**
  * 로컬 저장소 초기화
  */
-// 에러 처리 유틸리티
-function isErrorWithMessage(error: unknown): error is Error {
-  return error instanceof Error && typeof error.message === 'string';
-}
-
 const initLocalRepo = async (options: RepoOptions, account: GithubAccount, localPath: string) => {
   const { name } = options;
   const { fullName, email, token, userName } = account;
 
+  // if (PLATFORM != 'win') {
+  //   exec(`cd ${localPath} && chmod 777 -R ${localPath}`, { wait: 1 });
+  // }
+
+  let cmd = '';
   exec(`cd ${localPath} && git init && git config --global --add safe.directory ${localPath}`, { wait: 1 });
 
-  // 브랜치 이름 변경 시도 (실패해도 계속 진행)
   try {
     exec(`cd ${localPath} && git branch -m master main`, { wait: 2 });
   } catch (error) {
-    console.log('Branch rename failed (expected for new repos):', 
-      isErrorWithMessage(error) ? error.message : String(error));
+    console.log('####@@@@@===== error: ', error);
   }
 
-  let cmd = `cd ${localPath} && git config user.name "${fullName}"`;
+  cmd = `cd ${localPath} && git config user.name "${fullName}"`;
   cmd += ` && git config user.email "${email}"`;
-  
-  // Remote 설정
-  try {
-    exec(`cd ${localPath} && git remote add origin https://${token}@github.com/${userName}/${name}.git`, { wait: 1 });
-  } catch (error) {
-    if (isErrorWithMessage(error) && error.message.includes('remote origin already exists')) {
-      console.log('Remote origin exists, updating URL');
-      exec(`cd ${localPath} && git remote set-url origin https://${token}@github.com/${userName}/${name}.git`, { wait: 1 });
-    } else {
-      console.error('Failed to set up remote:', error);
-      throw error;
-    }
-  }
-
-  // 초기 커밋
+  cmd += ` && git remote add origin https://${token}@github.com/${userName}/${name}.git`;
+  // cmd += ` && git remote set-url origin https://${account.token}@github.com/${account.userName}/${options.name}.git`;
   const commitMessage = options.description || "Initial commit";
   cmd += ` && git add . && git commit -m "${commitMessage}"`;
-  
   exec(cmd, { wait: 10 });
 };
-
-// const initLocalRepo = async (options: RepoOptions, account: GithubAccount, localPath: string) => {
-//   const { name } = options;
-//   const { fullName, email, token, userName } = account;
-
-//   // if (PLATFORM != 'win') {
-//   //   exec(`cd ${localPath} && chmod 777 -R ${localPath}`, { wait: 1 });
-//   // }
-
-//   let cmd = '';
-//   exec(`cd ${localPath} && git init && git config --global --add safe.directory ${localPath}`, { wait: 1 });
-
-//   try {
-//     exec(`cd ${localPath} && git branch -m master main`, { wait: 2 });
-//   } catch (error) {
-//     console.log('####@@@@@===== error: ', error);
-//   }
-
-//   cmd = `cd ${localPath} && git config user.name "${fullName}"`;
-//   cmd += ` && git config user.email "${email}"`;
-//   cmd += ` && git remote add origin https://${token}@github.com/${userName}/${name}.git`;
-//   // cmd += ` && git remote set-url origin https://${account.token}@github.com/${account.userName}/${options.name}.git`;
-//   const commitMessage = options.description || "Initial commit";
-//   cmd += ` && git add . && git commit -m "${commitMessage}"`;
-//   exec(cmd, { wait: 10 });
-// };
 
 /**
  * 저장소 복제
