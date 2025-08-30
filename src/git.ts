@@ -142,9 +142,9 @@ const initLocalRepo = async (options: RepoOptions, account: GithubAccount, local
   const { name } = options;
   const { fullName, email, token, userName } = account;
 
-  if (PLATFORM != 'win') {
-    exec(`cd ${localPath} && chmod 777 -R ${localPath}`, { wait: 1 });
-  }
+  // if (PLATFORM != 'win') {
+  //   exec(`cd ${localPath} && chmod 777 -R ${localPath}`, { wait: 1 });
+  // }
 
   let cmd = '';
   exec(`cd ${localPath} && git init && git config --global --add safe.directory ${localPath}`, { wait: 1 });
