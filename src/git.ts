@@ -159,7 +159,8 @@ const initLocalRepo = async (options: RepoOptions, account: GithubAccount, local
   cmd += ` && git config user.email "${email}"`;
   cmd += ` && git remote add origin https://${token}@github.com/${userName}/${name}.git`;
   // cmd += ` && git remote set-url origin https://${account.token}@github.com/${account.userName}/${options.name}.git`;
-  cmd += ` && git add . && git commit -m "Initial commit"`;
+  const commitMessage = options.description || "Initial commit";
+  cmd += ` && git add . && git commit -m "${commitMessage}"`;
   exec(cmd, { wait: 10 });
 };
 
@@ -203,7 +204,8 @@ const pushRepo = (options: RepoOptions, account: GithubAccount, localPath: strin
 
   // 변경사항이 있으면 커밋
   if (status.length > 0) {
-    const cmd = `cd ${localPath} && git add . && git commit -m "Initial commit"`;
+    const commitMessage = options.description || "Initial commit";
+    const cmd = `cd ${localPath} && git add . && git commit -m "${commitMessage}"`;
     exec(cmd, { msg: `pushRepo ${cmd}` });
   }
 
