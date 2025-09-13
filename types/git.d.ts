@@ -776,5 +776,15 @@ declare const makeRepo: (octokit: Octokit, options: RepoOptions, account: Github
  * 로컬 + 원격 저장소 삭제
  */
 declare const removeRepo: (octokit: Octokit, options: RepoOptions, account: GithubAccount, localPath: string) => void;
-export { findGithubAccount, findAllRepos, createRemoteRepo, deleteRemoteRepo, cloneRepo, setLocalConfig, initLocalRepo, initRepo, copyRepo, pushRepo, makeRepo, removeRepo, };
+/**
+ * 저장소에서 최신 변경사항을 가져오기 (pull)
+ */
+declare const pullRepo: (options: RepoOptions, account: GithubAccount, localPath: string) => void;
+/**
+ * 로컬과 원격 저장소 동기화 (sync)
+ * - 로컬 변경사항이 있으면 커밋 후 푸시
+ * - 원격 변경사항이 있으면 풀
+ */
+declare const syncRepo: (options: RepoOptions, account: GithubAccount, localPath: string) => void;
+export { findGithubAccount, findAllRepos, createRemoteRepo, deleteRemoteRepo, cloneRepo, setLocalConfig, initLocalRepo, initRepo, copyRepo, pushRepo, makeRepo, removeRepo, pullRepo, syncRepo, };
 //# sourceMappingURL=git.d.ts.map

@@ -1,0 +1,60 @@
+# Source files (발행시 제외)
+src/
+tsconfig.json
+.swcrc
+cjs/.swcrc
+esm/.swcrc
+
+# Development files
+tests/
+test/
+__tests__/
+*.test.ts
+*.test.js
+*.spec.ts 
+*.spec.js
+jest.config.js
+jest.*.js
+
+# Build tools
+.github/
+.vscode/
+.idea/
+*.tsbuildinfo
+.eslintrc.*
+.prettierrc.*
+
+# Documentation (소스)
+docs/
+_docs/
+README_DEV.md
+CONTRIBUTING.md
+CHANGELOG_DEV.md
+
+# Development scripts
+publish.sh
+publish_improved.sh
+recommended_*.json
+*.log
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git*
+!.gitignore

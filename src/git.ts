@@ -272,6 +272,94 @@ const removeRepo = (octokit: Octokit, options: RepoOptions, account: GithubAccou
   }
 };
 
+/**
+ * 저장소에서 최신 변경사항을 가져오기 (pull)
+ */
+const pullRepo = (options: RepoOptions, account: GithubAccount, localPath: string) => {
+  try {
+    // 현재 브랜치 확인
+    const currentBranch = execSync(`cd ${localPath} && git rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
+    console.log(`📥 Pulling latest changes from ${currentBranch} branch...`);
+    
+    // 원격 저장소에서 최신 변경사항 가져오기
+    const cmd = `cd ${localPath} && git pull origin ${currentBranch}`;
+    exec(cmd, { msg: `pullRepo: ${cmd}` });
+    
+    console.log('✅ Pull completed successfully!');
+  } catch (error) {
+    console.error('❌ Pull failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * 로컬과 원격 저장소 동기화 (sync)
+ * - 로컬 변경사항이 있으면 커밋 후 푸시
+ * - 원격 변경사항이 있으면 풀
+ */
+const syncRepo = (options: RepoOptions, account: GithubAccount, localPath: string) => {
+  try {
+    console.log('🔄 Starting repository synchronization...');
+    
+    // 현재 브랜치 확인
+    const currentBranch = execSync(`cd ${localPath} && git rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
+    console.log(`📍 Current branch: ${currentBranch}`);
+    
+    // 작업 디렉토리 상태 확인
+    const status = execSync(`cd ${localPath} && git status --porcelain`, { encoding: 'utf8' });
+    
+    // 로컬 변경사항이 있는 경우 커밋
+    if (status.length > 0) {
+      console.log('📝 Local changes detected, committing...');
+      const commitMessage = options.description || `Auto-sync: ${new Date().toISOString()}`;
+      const commitCmd = `cd ${localPath} && git add . && git commit -m "${commitMessage}"`;
+      exec(commitCmd, { msg: `syncRepo commit: ${commitCmd}` });
+    } else {
+      console.log('📋 No local changes to commit');
+    }
+    
+    // 원격 저장소에서 최신 변경사항 가져오기
+    console.log('📥 Fetching from remote...');
+    exec(`cd ${localPath} && git fetch origin ${currentBranch}`, { msg: 'syncRepo fetch' });
+    
+    // 원격과 로컬의 차이 확인
+    try {
+      const ahead = execSync(`cd ${localPath} && git rev-list --count HEAD..origin/${currentBranch}`, { encoding: 'utf8' }).trim();
+      const behind = execSync(`cd ${localPath} && git rev-list --count origin/${currentBranch}..HEAD`, { encoding: 'utf8' }).trim();
+      
+      console.log(`📊 Repository status: ${behind} commits ahead, ${ahead} commits behind`);
+      
+      // 원격에 새로운 변경사항이 있는 경우 풀
+      if (parseInt(ahead) > 0) {
+        console.log('📥 Pulling remote changes...');
+        exec(`cd ${localPath} && git pull origin ${currentBranch}`, { msg: 'syncRepo pull' });
+      }
+      
+      // 로컬에 푸시할 변경사항이 있는 경우 푸시
+      if (parseInt(behind) > 0) {
+        console.log('📤 Pushing local changes...');
+        exec(`cd ${localPath} && git push origin ${currentBranch}`, { msg: 'syncRepo push' });
+      }
+      
+      if (parseInt(ahead) === 0 && parseInt(behind) === 0) {
+        console.log('✅ Repository is already up to date!');
+      } else {
+        console.log('✅ Synchronization completed successfully!');
+      }
+      
+    } catch (error) {
+      // 원격 브랜치가 없는 경우 (첫 푸시)
+      console.log('📤 Pushing to remote (first time)...');
+      exec(`cd ${localPath} && git push -u origin ${currentBranch}`, { msg: 'syncRepo initial push' });
+      console.log('✅ Initial push completed successfully!');
+    }
+    
+  } catch (error) {
+    console.error('❌ Sync failed:', error);
+    throw error;
+  }
+};
+
 // & Export AREA
 // &---------------------------------------------------------------------------
 export {
@@ -287,4 +375,6 @@ export {
   pushRepo,
   makeRepo,
   removeRepo,
+  pullRepo,
+  syncRepo,
 };
