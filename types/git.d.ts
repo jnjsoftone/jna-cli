@@ -786,5 +786,11 @@ declare const pullRepo: (options: RepoOptions, account: GithubAccount, localPath
  * - 원격 변경사항이 있으면 풀
  */
 declare const syncRepo: (options: RepoOptions, account: GithubAccount, localPath: string) => void;
-export { findGithubAccount, findAllRepos, createRemoteRepo, deleteRemoteRepo, cloneRepo, setLocalConfig, initLocalRepo, initRepo, copyRepo, pushRepo, makeRepo, removeRepo, pullRepo, syncRepo, };
+/**
+ * Github 사용자 목록 조회
+ * @param src - 데이터 소스 ('github' | 'local')
+ * @returns Github 사용자 목록
+ */
+declare const findAllUsers: (src?: string) => Promise<Record<string, GithubAccount> | undefined>;
+export { findGithubAccount, findAllUsers, findAllRepos, createRemoteRepo, deleteRemoteRepo, cloneRepo, setLocalConfig, initLocalRepo, initRepo, copyRepo, pushRepo, makeRepo, removeRepo, pullRepo, syncRepo, };
 //# sourceMappingURL=git.d.ts.map

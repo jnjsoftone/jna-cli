@@ -360,10 +360,32 @@ const syncRepo = (options: RepoOptions, account: GithubAccount, localPath: strin
   }
 };
 
+/**
+ * Github 사용자 목록 조회
+ * @param src - 데이터 소스 ('github' | 'local')
+ * @returns Github 사용자 목록
+ */
+const findAllUsers = async (src = 'github'): Promise<Record<string, GithubAccount> | undefined> => {
+  try {
+    if (src === 'local') {
+      const accounts = await loadJson(`${localEnvRoot}/Apis/github.json`);
+      return accounts;
+    } else if (src === 'github') {
+      const res = await readJsonFromGithub('Apis/github.json', githubEnv);
+      return res as Record<string, GithubAccount>;
+    }
+    return undefined;
+  } catch (error) {
+    console.error('GitHub 사용자 목록을 가져오는 중 오류가 발생했습니다:', error);
+    return undefined;
+  }
+};
+
 // & Export AREA
 // &---------------------------------------------------------------------------
 export {
   findGithubAccount,
+  findAllUsers,
   findAllRepos,
   createRemoteRepo,
   deleteRemoteRepo,

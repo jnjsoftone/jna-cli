@@ -6,6 +6,7 @@ import { loadJson, saveFile, saveJson, makeDir } from 'jnu-abc';
 // import { readJsonFromGithub } from 'jnu-cloud';
 import {
   findAllRepos,
+  findAllUsers,
   findGithubAccount,
   createRemoteRepo,
   setLocalConfig,
@@ -43,7 +44,7 @@ const options = yargs
   .option('e', {
     alias: 'exec',
     default: 'copyRepo',
-    describe: 'exec command: copyRepo(clone+config)/makeRepo(create+push)/removeRepo(delete)/pull(fetch latest)/sync(auto commit+push+pull)',
+    describe: 'exec command: copyRepo(clone+config)/makeRepo(create+push)/removeRepo(delete)/pull(fetch latest)/sync(auto commit+push+pull)/list(repos)/userlist(users)',
     type: 'string',
     demandOption: true,
   })
@@ -164,6 +165,26 @@ function saveRepoDataToFiles(repos: any[], outputPaths: string[]) {
   });
 }
 
+function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
+  const resolvedPath = path.resolve(outputPath);
+  const dir = path.dirname(resolvedPath);
+  const ext = path.extname(resolvedPath).toLowerCase();
+  
+  try {
+    // Ensure directory exists
+    makeDir(dir);
+    
+    if (ext === '.json') {
+      saveJson(resolvedPath, users, { overwrite: true });
+      console.log(`✅ User data saved to: ${resolvedPath}`);
+    } else {
+      console.warn(`⚠️  Only JSON format is supported for user data: ${resolvedPath}`);
+    }
+  } catch (error) {
+    console.error(`❌ Failed to save user data to ${resolvedPath}:`, error);
+  }
+}
+
 // const findGithubAccount = (userName: string, src = 'github'): any => {
 //   if (src === 'local') {
 //     return loadJson(`${localEnvRoot}/Apis/github.json`)[userName];
@@ -224,6 +245,37 @@ function saveRepoDataToFiles(repos: any[], outputPaths: string[]) {
           }
         } catch (error) {
           console.error('저장소 목록 조회 중 오류 발생:', error);
+        }
+        break;
+      case 'userlist':
+        try {
+          result = await findAllUsers('github');
+          if (result) {
+            const userCount = Object.keys(result).length;
+            console.log(`📊 Found ${userCount} users in GitHub account data`);
+            
+            // Check if location option contains file path for output
+            if (options.location && options.location !== './') {
+              saveUserDataToFile(result, options.location);
+            } else {
+              // Default behavior: save to default location
+              const defaultPath = './_docs/users.json';
+              saveUserDataToFile(result, defaultPath);
+            }
+            
+            // Output user list to console
+            console.log('\n👥 User List:');
+            Object.keys(result).forEach((userName, index) => {
+              const user = result[userName];
+              console.log(`${index + 1}. ${userName}`);
+              console.log(`   📧 ${user.email || 'No email'}`);
+              console.log(`   👤 ${user.fullName || 'No full name'}\n`);
+            });
+          } else {
+            console.log('❌ No user data found');
+          }
+        } catch (error) {
+          console.error('사용자 목록 조회 중 오류 발생:', error);
         }
         break;
       case 'create':
