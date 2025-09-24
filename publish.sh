@@ -15,6 +15,7 @@ commit_msg="chore: build for publish"
 dry_run=false
 skip_tests=false
 force_publish=false
+auto_commit=false
 
 # Helper functions
 log_info() {
@@ -37,7 +38,73 @@ log_error() {
 check_git_repo() {
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
         log_error "Not in a git repository"
+        log_info "To initialize git repository:"
+        echo "  git init"
+        echo "  git remote add origin <repository-url>"
         exit 1
+    fi
+}
+
+# Function to check git configuration
+check_git_config() {
+    local git_name=$(git config user.name 2>/dev/null)
+    local git_email=$(git config user.email 2>/dev/null)
+    
+    if [[ -z "$git_name" || -z "$git_email" ]]; then
+        log_warning "Git user configuration incomplete"
+        if [[ -z "$git_name" ]]; then
+            log_info "Missing git user.name - set with: git config user.name 'Your Name'"
+        fi
+        if [[ -z "$git_email" ]]; then
+            log_info "Missing git user.email - set with: git config user.email 'your.email@example.com'"
+        fi
+        
+        if [[ "$force_publish" == false ]]; then
+            exit 1
+        else
+            log_warning "Continuing with incomplete git config (forced)"
+        fi
+    else
+        log_info "Git configured as: $git_name <$git_email>"
+    fi
+}
+
+# Function to check remote repository
+check_git_remote() {
+    local remote_url=$(git config --get remote.origin.url 2>/dev/null)
+    
+    if [[ -z "$remote_url" ]]; then
+        log_warning "No remote repository configured"
+        log_info "Add remote with: git remote add origin <repository-url>"
+        
+        if [[ "$force_publish" == false ]]; then
+            read -p "Continue without remote? (y/N): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
+        fi
+    else
+        log_info "Remote repository: $remote_url"
+        
+        # Test connectivity to remote
+        log_info "Testing remote connectivity..."
+        if ! git ls-remote --exit-code origin > /dev/null 2>&1; then
+            log_warning "Cannot connect to remote repository"
+            log_info "Possible issues:"
+            echo "  1. Network connectivity"
+            echo "  2. Authentication (check SSH keys or HTTPS credentials)"
+            echo "  3. Repository permissions"
+            echo "  4. Repository may not exist"
+            
+            if [[ "$force_publish" == false ]]; then
+                read -p "Continue anyway? (y/N): " -n 1 -r
+                echo
+                if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                    exit 1
+                fi
+            fi
+        fi
     fi
 }
 
@@ -45,8 +112,32 @@ check_git_repo() {
 check_working_directory() {
     if [[ -n $(git status --porcelain) ]]; then
         log_warning "Working directory has uncommitted changes"
-        if [[ "$force_publish" == false ]]; then
-            log_error "Please commit or stash changes before publishing (use --force to override)"
+        
+        # Show detailed git status
+        echo "Uncommitted changes:"
+        git status --porcelain | head -10
+        if [[ $(git status --porcelain | wc -l) -gt 10 ]]; then
+            echo "... and $(( $(git status --porcelain | wc -l) - 10 )) more files"
+        fi
+        echo ""
+        
+        if [[ "$auto_commit" == true ]]; then
+            log_info "Auto-committing changes before publish..."
+            git add .
+            if git commit -m "Auto-commit before publish: $commit_msg"; then
+                log_success "Changes auto-committed successfully"
+            else
+                log_error "Auto-commit failed"
+                exit 1
+            fi
+        elif [[ "$force_publish" == false ]]; then
+            log_error "Please commit or stash changes before publishing"
+            log_info "Options to fix this:"
+            echo "  1. Auto-commit:       ./publish.sh --auto-commit"
+            echo "  2. Manual commit:     git add . && git commit -m 'your message'"
+            echo "  3. Stash changes:     git stash"
+            echo "  4. Force publish:     ./publish.sh --force"
+            echo "  5. Discard changes:   git restore ."
             exit 1
         fi
     fi
@@ -110,13 +201,22 @@ validate_version() {
 show_dry_run() {
     current_version=$(node -p "require('./package.json').version")
     log_info "DRY RUN - Would execute:"
-    echo "  1. Pull latest changes from remote"
-    echo "  2. Run tests (unless --skip-tests)"
-    echo "  3. Build project"
-    echo "  4. Commit changes with message: '$commit_msg'"
-    echo "  5. Bump version from $current_version ($mode)"
-    echo "  6. Push changes and tags"
-    echo "  7. Publish to npm"
+    echo "  Pre-flight checks:"
+    echo "    - Verify git repository"
+    echo "    - Check git user configuration"
+    echo "    - Test remote repository connectivity"
+    echo "    - Verify npm authentication"
+    echo "    - Check branch (main/master preferred)"
+    echo "    - Verify working directory is clean (or auto-commit if enabled)"
+    echo ""
+    echo "  Publish steps:"
+    echo "    1. Pull latest changes from remote"
+    echo "    2. Run tests (unless --skip-tests)"
+    echo "    3. Build project"
+    echo "    4. Commit changes with message: '$commit_msg'"
+    echo "    5. Bump version from $current_version ($mode)"
+    echo "    6. Push changes and tags"
+    echo "    7. Publish to npm"
     echo ""
     log_info "To actually publish, run without --dry-run"
 }
@@ -140,6 +240,10 @@ while [[ $# -gt 0 ]]; do
             force_publish=true
             shift
             ;;
+        --auto-commit)
+            auto_commit=true
+            shift
+            ;;
         patch|minor|major|prerelease|prepatch|preminor|premajor)
             mode="$1"
             shift
@@ -161,6 +265,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --dry-run           Show what would be done without executing"
             echo "  --skip-tests        Skip running tests"
             echo "  --force             Force publish even with warnings"
+            echo "  --auto-commit       Automatically commit uncommitted changes before publish"
             echo "  -h, --help          Show this help"
             exit 0
             ;;
@@ -182,6 +287,8 @@ main() {
     
     # Pre-flight checks
     check_git_repo
+    check_git_config
+    check_git_remote
     check_npm_auth
     
     if [[ "$dry_run" == true ]]; then
@@ -196,7 +303,16 @@ main() {
     set -e  # Exit on any error
     
     log_info "Step 1/7: Pulling latest changes..."
-    git pull || { log_error "Git pull failed"; exit 1; }
+    if ! git pull; then
+        log_error "Git pull failed"
+        log_info "Possible solutions:"
+        echo "  1. Check internet connection"
+        echo "  2. Verify remote repository exists: git remote -v"
+        echo "  3. Check authentication: git config --list | grep user"
+        echo "  4. Force push if needed: git push --force-with-lease"
+        echo "  5. Check for merge conflicts"
+        exit 1
+    fi
     
     log_info "Step 2/7: Running tests..."
     run_tests
@@ -204,21 +320,52 @@ main() {
     log_info "Step 3/7: Building project..."
     npm run build || { log_error "Build failed"; exit 1; }
     
-    log_info "Step 4/7: Committing changes..."
+    log_info "Step 4/7: Committing build changes..."
     if [[ -n $(git status --porcelain) ]]; then
         git add .
-        git commit -m "$commit_msg" || { log_error "Git commit failed"; exit 1; }
+        # Use specific commit message for build artifacts
+        build_commit_msg="chore: build artifacts for v$(node -p "require('./package.json').version")"
+        if ! git commit -m "$build_commit_msg"; then
+            log_error "Git commit failed"
+            log_info "Possible solutions:"
+            echo "  1. Check git configuration: git config user.name && git config user.email"
+            echo "  2. Verify commit message format"
+            echo "  3. Check for pre-commit hooks blocking commit"
+            echo "  4. Review staged files: git status"
+            exit 1
+        fi
+        log_success "Build artifacts committed"
     else
-        log_info "No changes to commit"
+        log_info "No build changes to commit"
     fi
     
     log_info "Step 5/7: Bumping version..."
-    npm version $mode || { log_error "Version bump failed"; exit 1; }
+    if ! npm version $mode; then
+        log_error "Version bump failed"
+        log_info "Possible solutions:"
+        echo "  1. Check if version is valid: $mode"
+        echo "  2. Ensure working directory is clean"
+        echo "  3. Check git configuration is set up"
+        echo "  4. Verify package.json exists and is valid"
+        echo "  5. Check npm version command permissions"
+        exit 1
+    fi
     new_version=$(node -p "require('./package.json').version")
     log_success "Version bumped to: $new_version"
     
     log_info "Step 6/7: Pushing to git..."
-    git push --follow-tags || { log_error "Git push failed"; exit 1; }
+    if ! git push --follow-tags; then
+        log_error "Git push failed"
+        log_info "Possible solutions:"
+        echo "  1. Check remote repository permissions"
+        echo "  2. Verify authentication: git remote -v"
+        echo "  3. Check network connectivity"
+        echo "  4. Try force push (dangerous): git push --force-with-lease --follow-tags"
+        echo "  5. Check if remote branch protection rules are blocking push"
+        echo "  6. Ensure you have push access to the repository"
+        log_warning "Version was already bumped to $new_version - you may need to reset or handle manually"
+        exit 1
+    fi
     
     log_info "Step 7/7: Publishing to npm..."
     npm publish || { log_error "NPM publish failed"; exit 1; }

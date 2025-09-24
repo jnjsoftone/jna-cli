@@ -200,7 +200,11 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
   try {
     const account = await findGithubAccount(options.userName ?? '', 'github');
     if (!account) {
-      console.error('GitHub 계정 정보를 찾을 수 없습니다.');
+      console.error(`❌ GitHub 계정 정보를 찾을 수 없습니다: ${options.userName}`);
+      console.log(`💡 다음 중 하나를 시도해보세요:`);
+      console.log(`   1. 계정 설정: xgit -e setAccount -n "Full Name" -e "email@example.com" -t "토큰" -u "${options.userName}"`);
+      console.log(`   2. 다른 계정명으로 시도: xgit -e list -u "다른계정명"`);
+      console.log(`   3. 사용 가능한 계정 목록 확인: xgit -e userlist`);
       process.exit(1);
     }
 
@@ -243,8 +247,21 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
           if (result.length > 10) {
             console.log(`... and ${result.length - 10} more repositories (see output files for complete list)`);
           }
-        } catch (error) {
-          console.error('저장소 목록 조회 중 오류 발생:', error);
+        } catch (error: any) {
+          // Check if error is authentication related
+          if (error?.status === 401 || error?.message?.includes('Bad credentials')) {
+            console.warn(`⚠️  인증 실패로 계정 '${options.userName}' 건너뜀 - 토큰을 업데이트하거나 계정 설정을 확인하세요`);
+            console.log(`💡 해결 방법: xgit -e setAccount -n "Full Name" -e "email@example.com" -t "새토큰" -u "${options.userName}"`);
+            // Don't exit, just continue with empty result
+            result = [];
+          } else if (error?.status === 403) {
+            console.warn(`⚠️  권한 부족으로 계정 '${options.userName}' 건너뜀 - API 사용량 한도 초과이거나 저장소 접근 권한이 없습니다`);
+            result = [];
+          } else {
+            console.error(`❌ 계정 '${options.userName}' 저장소 목록 조회 중 오류 발생:`, error?.message || error);
+            // For other errors, also don't exit - just continue
+            result = [];
+          }
         }
         break;
       case 'userlist':
@@ -405,9 +422,27 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
         );
         break;
     }
-  } catch (error) {
-    console.error('Error:', error);
-    process.exit(1);
+  } catch (error: any) {
+    // Handle different types of errors more gracefully
+    if (error?.status === 401 || error?.message?.includes('Bad credentials')) {
+      console.error(`❌ 인증 실패: GitHub 토큰이 유효하지 않습니다. 계정: ${options.userName}`);
+      console.log(`💡 해결 방법: 새로운 GitHub Personal Access Token을 생성하고 설정하세요`);
+      console.log(`   xgit -e setAccount -n "Full Name" -e "email@example.com" -t "새토큰" -u "${options.userName}"`);
+      process.exit(1);
+    } else if (error?.status === 403) {
+      console.error(`❌ 권한 부족: API 사용량 한도 초과이거나 저장소 접근 권한이 없습니다. 계정: ${options.userName}`);
+      process.exit(1);  
+    } else if (!options.userName || options.userName === '') {
+      console.error(`❌ 사용자명이 제공되지 않았습니다. -u 옵션을 사용하여 사용자명을 지정하세요`);
+      process.exit(1);
+    } else {
+      console.error(`❌ 예기치 않은 오류 발생:`, error?.message || error);
+      console.log(`🔧 문제가 지속되면 다음을 확인하세요:`);
+      console.log(`   1. 인터넷 연결 상태`);
+      console.log(`   2. GitHub 서비스 상태`);
+      console.log(`   3. 계정 설정 및 토큰 유효성`);
+      process.exit(1);
+    }
   }
 })();
 

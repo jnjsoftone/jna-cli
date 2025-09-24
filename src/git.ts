@@ -91,11 +91,16 @@ const findGithubAccount = async (userName: string, src = 'github'): Promise<Gith
  * 모든 저장소 목록 조회
  */
 const findAllRepos = async (octokit: Octokit) => {
-  const response = await octokit.rest.repos.listForAuthenticatedUser({
-    per_page: 100, // 페이지당 결과 수
-    sort: 'updated', // 업데이트 순으로 정렬
-  });
-  return response.data;
+  try {
+    const response = await octokit.rest.repos.listForAuthenticatedUser({
+      per_page: 100, // 페이지당 결과 수
+      sort: 'updated', // 업데이트 순으로 정렬
+    });
+    return response.data;
+  } catch (error: any) {
+    // Preserve original error for caller to handle
+    throw error;
+  }
 };
 
 /**
