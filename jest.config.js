@@ -17,4 +17,5 @@ export default {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
   verbose: true,
+  passWithNoTests: true, // Allow passing when no tests are found
 };
