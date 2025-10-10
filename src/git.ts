@@ -19,7 +19,20 @@ import { githubEnv, localEnvRoot } from './env.js';
 
 // & Types AREA
 // &---------------------------------------------------------------------------
-import type { GithubAccount, RepoOptions } from './types.js';
+import type {
+  GithubAccount,
+  RepoOptions,
+  IssueListOptions,
+  IssueCreateOptions,
+  IssueUpdateOptions,
+  ProjectListOptions,
+  ProjectCreateOptions,
+  ProjectColumnOptions,
+  ProjectCardOptions,
+  WorkflowDispatchOptions,
+  WorkflowListOptions,
+  WorkflowRunsOptions,
+} from './types.js';
 
 // & Variables AREA
 // &---------------------------------------------------------------------------
@@ -365,6 +378,180 @@ const syncRepo = (options: RepoOptions, account: GithubAccount, localPath: strin
   }
 };
 
+
+/**
+ * 저장소 이슈 목록 조회
+ */
+const listRepoIssues = async (octokit: Octokit, options: IssueListOptions) => {
+  const { owner, repo, state = 'open', labels, assignee, perPage = 30, page = 1 } = options;
+  const response = await octokit.rest.issues.listForRepo({
+    owner,
+    repo,
+    state,
+    labels: labels && labels.length > 0 ? labels.join(',') : undefined,
+    assignee,
+    per_page: perPage,
+    page,
+  });
+  return response.data;
+};
+
+/**
+ * 저장소 이슈 생성
+ */
+const createRepoIssue = async (octokit: Octokit, options: IssueCreateOptions) => {
+  const { owner, repo, title, body, labels, assignees, milestone } = options;
+  const response = await octokit.rest.issues.create({
+    owner,
+    repo,
+    title,
+    body,
+    labels,
+    assignees,
+    milestone,
+  });
+  return response.data;
+};
+
+/**
+ * 저장소 이슈 업데이트 (상태/내용)
+ */
+const updateRepoIssue = async (octokit: Octokit, options: IssueUpdateOptions) => {
+  const { owner, repo, issueNumber, title, body, state, labels, assignees, milestone } = options;
+  const response = await octokit.rest.issues.update({
+    owner,
+    repo,
+    issue_number: issueNumber,
+    title,
+    body,
+    state,
+    labels,
+    assignees,
+    milestone,
+  });
+  return response.data;
+};
+
+/**
+ * 저장소 프로젝트 목록 조회
+ */
+const listRepoProjects = async (octokit: Octokit, options: ProjectListOptions) => {
+  const { owner, repo, state = 'open', perPage = 30 } = options;
+  const response = await octokit.rest.projects.listForRepo({
+    owner,
+    repo,
+    state,
+    per_page: perPage,
+  });
+  return response.data;
+};
+
+/**
+ * 저장소 프로젝트 생성
+ */
+const createRepoProject = async (octokit: Octokit, options: ProjectCreateOptions) => {
+  const { owner, repo, name, body } = options;
+  const response = await octokit.rest.projects.createForRepo({
+    owner,
+    repo,
+    name,
+    body,
+  });
+  return response.data;
+};
+
+/**
+ * 프로젝트 컬럼 생성
+ */
+const createProjectColumn = async (octokit: Octokit, options: ProjectColumnOptions) => {
+  const { projectId, name } = options;
+  const response = await octokit.rest.projects.createColumn({
+    project_id: projectId,
+    name,
+  });
+  return response.data;
+};
+
+/**
+ * 프로젝트 카드 생성 (이슈/PR 연결 또는 노트 추가)
+ */
+const createProjectCard = async (octokit: Octokit, options: ProjectCardOptions) => {
+  const { columnId, note, contentId, contentType } = options;
+  if (note) {
+    const response = await octokit.rest.projects.createCard({
+      column_id: columnId,
+      note,
+    });
+    return response.data;
+  }
+  if (!contentId || !contentType) {
+    throw new Error('Project card requires either a note or a content reference');
+  }
+  const response = await octokit.rest.projects.createCard({
+    column_id: columnId,
+    content_id: contentId,
+    content_type: contentType,
+  });
+  return response.data;
+};
+
+/**
+ * 저장소 워크플로 목록 조회
+ */
+const listRepoWorkflows = async (octokit: Octokit, options: WorkflowListOptions) => {
+  const { owner, repo, perPage = 30, page = 1 } = options;
+  const response = await octokit.rest.actions.listRepoWorkflows({
+    owner,
+    repo,
+    per_page: perPage,
+    page,
+  });
+  return response.data.workflows;
+};
+
+/**
+ * 워크플로 실행 이력 조회
+ */
+const listWorkflowRuns = async (octokit: Octokit, options: WorkflowRunsOptions) => {
+  const { owner, repo, workflowId, branch, status, perPage = 30, page = 1 } = options;
+  if (workflowId) {
+    const response = await octokit.rest.actions.listWorkflowRuns({
+      owner,
+      repo,
+      workflow_id: workflowId,
+      branch,
+      status,
+      per_page: perPage,
+      page,
+    });
+    return response.data.workflow_runs;
+  }
+  const response = await octokit.rest.actions.listWorkflowRunsForRepo({
+    owner,
+    repo,
+    branch,
+    status,
+    per_page: perPage,
+    page,
+  });
+  return response.data.workflow_runs;
+};
+
+/**
+ * 워크플로 수동 실행 (dispatch)
+ */
+const dispatchWorkflow = async (octokit: Octokit, options: WorkflowDispatchOptions) => {
+  const { owner, repo, workflowId, ref, inputs } = options;
+  await octokit.rest.actions.createWorkflowDispatch({
+    owner,
+    repo,
+    workflow_id: workflowId,
+    ref,
+    inputs,
+  });
+};
+
+
 /**
  * Github 사용자 목록 조회
  * @param src - 데이터 소스 ('github' | 'local')
@@ -404,4 +591,14 @@ export {
   removeRepo,
   pullRepo,
   syncRepo,
+  listRepoIssues,
+  createRepoIssue,
+  updateRepoIssue,
+  listRepoProjects,
+  createRepoProject,
+  createProjectColumn,
+  createProjectCard,
+  listRepoWorkflows,
+  listWorkflowRuns,
+  dispatchWorkflow,
 };
