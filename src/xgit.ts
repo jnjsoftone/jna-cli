@@ -427,7 +427,20 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
     }
 
     // GitHub 계정 정보 확인 (userName을 덮어쓰지 않고 그대로 사용)
-    console.log(`@@@ git account: ${JSON.stringify(account)}`);
+    const targetOwner = account.userName ?? options.userName ?? '';
+    if (!targetOwner) {
+      console.error('❌ 사용할 GitHub 계정 또는 저장소 소유자 정보를 확인할 수 없습니다.');
+      console.log('💡 -u 옵션으로 계정명을 전달했는지 확인하거나 계정 설정을 갱신하세요.');
+      process.exit(1);
+    }
+
+    console.log(
+      `@@@ git account: ${JSON.stringify({
+        userName: targetOwner,
+        fullName: account.fullName,
+        email: account.email,
+      })}`
+    );
 
     const octokit = new Octokit({ auth: account.token });
     const localPath = getLocalPath(options.repoName ?? '', options.location) ?? '';
@@ -732,7 +745,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
         const labels = parseCsv(options.labels);
         const assignee = options.assignee;
         const issues = await listRepoIssues(octokit, {
-          owner: account.userName,
+          owner: targetOwner,
           repo: repoName,
           state: issueState,
           labels,
@@ -764,7 +777,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
         const labels = parseCsv(options.labels);
         const assignees = parseCsv(options.assignees);
         const issue = await createRepoIssue(octokit, {
-          owner: account.userName,
+          owner: targetOwner,
           repo: repoName,
           title: options.title,
           body: options.body ?? options.description,
@@ -804,7 +817,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
               : null
             : undefined;
         const updatedIssue = await updateRepoIssue(octokit, {
-          owner: account.userName,
+          owner: targetOwner,
           repo: repoName,
           issueNumber: options.issueNumber,
           title: options.title,
@@ -828,13 +841,13 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
         if (options.state && options.state.toLowerCase() === 'all') {
           const [openProjects, closedProjects] = await Promise.all([
             listRepoProjects(octokit, {
-              owner: account.userName,
+              owner: targetOwner,
               repo: repoName,
               state: 'open',
               perPage: options.perPage,
             }),
             listRepoProjects(octokit, {
-              owner: account.userName,
+              owner: targetOwner,
               repo: repoName,
               state: 'closed',
               perPage: options.perPage,
@@ -847,7 +860,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             console.warn(`⚠️  Project state must be 'open', 'closed', or 'all'. Ignoring value: ${options.state}`);
           }
           projects = await listRepoProjects(octokit, {
-            owner: account.userName,
+              owner: targetOwner,
             repo: repoName,
             state: projectState,
             perPage: options.perPage,
@@ -874,7 +887,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
           process.exit(1);
         }
         const project = await createRepoProject(octokit, {
-          owner: account.userName,
+          owner: targetOwner,
           repo: options.repoName,
           name: projectName,
           body: options.body ?? options.description,
@@ -935,7 +948,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
           process.exit(1);
         }
         const workflows = await listRepoWorkflows(octokit, {
-          owner: account.userName,
+          owner: targetOwner,
           repo: options.repoName,
           perPage: options.perPage,
           page: options.page,
@@ -962,7 +975,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
         }
         const workflowId = parseWorkflowIdentifier(options.workflowId);
         const runs = await listWorkflowRuns(octokit, {
-          owner: account.userName,
+          owner: targetOwner,
           repo: options.repoName,
           workflowId,
           branch: options.branch,
@@ -1013,7 +1026,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
           }
         }
         await dispatchWorkflow(octokit, {
-          owner: account.userName,
+          owner: targetOwner,
           repo: options.repoName,
           workflowId,
           ref: options.ref,
