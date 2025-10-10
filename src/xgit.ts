@@ -434,15 +434,20 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
       process.exit(1);
     }
 
+    const accountWithOwner = {
+      ...account,
+      userName: targetOwner,
+    };
+
     console.log(
       `@@@ git account: ${JSON.stringify({
-        userName: targetOwner,
-        fullName: account.fullName,
-        email: account.email,
+        userName: accountWithOwner.userName,
+        fullName: accountWithOwner.fullName,
+        email: accountWithOwner.email,
       })}`
     );
 
-    const octokit = new Octokit({ auth: account.token });
+    const octokit = new Octokit({ auth: accountWithOwner.token });
     const localPath = getLocalPath(options.repoName ?? '', options.location) ?? '';
     let result: any;
 
@@ -621,7 +626,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
           {
             name: options.repoName ?? '',
           },
-          account
+          accountWithOwner
         );
         break;
       case 'setLocalConfig':
@@ -630,7 +635,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             name: options.repoName ?? '',
             description: options.description ?? '',
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
@@ -641,7 +646,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             name: options.repoName ?? '',
             description: options.description ?? '',
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
@@ -651,7 +656,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             name: options.repoName ?? '',
             description: options.description ?? '',
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
@@ -665,7 +670,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             description: options.description ?? '',
             isPrivate: options.isPrivate ?? false,
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
@@ -676,7 +681,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             name: options.repoName ?? '',
             description: options.description ?? '',
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
@@ -688,7 +693,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             description: options.description ?? 'description',
             isPrivate: options.isPrivate ?? false,
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
@@ -701,13 +706,13 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             description: options.description ?? '',
             isPrivate: options.isPrivate ?? false,
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
       case 'remove':
       case 'removeRepo':
-        await removeRepo(octokit, { name: options.repoName ?? '' }, account, localPath);
+        await removeRepo(octokit, { name: options.repoName ?? '' }, accountWithOwner, localPath);
         break;
       case 'pull':
       case 'pullRepo':
@@ -716,7 +721,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             name: options.repoName ?? '',
             description: options.description ?? '',
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
@@ -727,7 +732,7 @@ function saveUserDataToFile(users: Record<string, any>, outputPath: string) {
             name: options.repoName ?? '',
             description: options.description ?? '',
           },
-          account,
+          accountWithOwner,
           localPath
         );
         break;
