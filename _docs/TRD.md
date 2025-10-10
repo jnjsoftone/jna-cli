@@ -57,6 +57,14 @@ interface CommandOptions {
   repoName?: string;      // Repository name
   description?: string;   // Repo description / commit message
   isPrivate?: boolean;    // Repository visibility
+  state?: string;         // Issue/project state filters
+  labels?: string;        // Comma-separated labels
+  assignees?: string;     // Comma-separated assignees
+  projectName?: string;   // Project creation name
+  columnName?: string;    // Project column name
+  workflowId?: string;    // Actions workflow identifier
+  ref?: string;           // Git reference for workflow dispatch
+  inputs?: string;        // JSON inputs for workflow dispatch
 }
 ```
 
@@ -69,6 +77,9 @@ interface CommandOptions {
 - `init`, `initRepo`: Full repository initialization
 - `make`, `makeRepo`: Create and initialize repository
 - `copy`, `copyRepo`: Clone and configure repository
+- `issues:list`, `issues:create`, `issues:update`: Issue lifecycle management
+- `projects:list`, `projects:create`, `projects:create-column`, `projects:create-card`: Project board automation
+- `actions:list-workflows`, `actions:list-runs`, `actions:dispatch`: GitHub Actions insights and dispatch
 
 #### 3.2 Git Operations (`git.ts`)
 ```typescript
@@ -78,6 +89,16 @@ interface CommandOptions {
 - pushRepo(options: RepoOptions, account: GithubAccount, localPath: string)
 - initLocalRepo(options: RepoOptions, account: GithubAccount, localPath: string)
 - cloneRepo(options: RepoOptions, account: GithubAccount, localPath: string)
+- listRepoIssues(octokit: Octokit, options: IssueListOptions)
+- createRepoIssue(octokit: Octokit, options: IssueCreateOptions)
+- updateRepoIssue(octokit: Octokit, options: IssueUpdateOptions)
+- listRepoProjects(octokit: Octokit, options: ProjectListOptions)
+- createRepoProject(octokit: Octokit, options: ProjectCreateOptions)
+- createProjectColumn(octokit: Octokit, options: ProjectColumnOptions)
+- createProjectCard(octokit: Octokit, options: ProjectCardOptions)
+- listRepoWorkflows(octokit: Octokit, options: WorkflowListOptions)
+- listWorkflowRuns(octokit: Octokit, options: WorkflowRunsOptions)
+- dispatchWorkflow(octokit: Octokit, options: WorkflowDispatchOptions)
 ```
 
 #### 3.3 CLI Utilities (`cli.ts`)

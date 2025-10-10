@@ -86,7 +86,13 @@ xgit -e <작업> -u <사용자명> -n <저장소> [옵션]
 - `-n, --repoName`: 저장소 이름 (대부분 작업에 필수)
 - `-d, --description`: 저장소 설명 또는 커밋 메시지
 - `-p, --isPrivate`: 비공개 저장소 생성 (기본값: false)
-- `-s, --src`: 소스 위치 (`github` 또는 `local`)
+- `-s, --src`: 계정 메타데이터 위치 (`github` 또는 `local`)
+- `--state`: 이슈/프로젝트 상태 필터 (`open`, `closed`, `all`)
+- `--labels`: 쉼표 구분 라벨 목록
+- `--assignee`, `--assignees`: 이슈 담당자 필터 및 지정
+- `--per-page`, `--page`: 페이징 옵션
+- `--project-name`, `--column-name`: 프로젝트/컬럼 생성 시 이름 지정
+- `--workflow-id`, `--ref`, `--inputs`: GitHub Actions 디스패치 관련 매개변수
 
 ### 저장소 작업
 
@@ -145,6 +151,95 @@ xgit -e del -u your-username -n repo-to-delete
 
 # 원격 및 로컬 모두 삭제
 xgit -e remove -u your-username -n repo-to-delete
+```
+
+### 이슈 관리
+
+#### 1. 저장소 이슈 조회
+```bash
+# 기본: 열린 이슈 30개
+xgit -e issues:list -u your-username -n some-repo
+
+# 라벨/담당자/상태 필터
+xgit -e issues:list -u your-username -n some-repo --labels bug,high --assignee teammate --state all
+```
+
+#### 2. 이슈 생성
+```bash
+xgit -e issues:create -u your-username -n some-repo \
+  --title "로그인 오류" \
+  --body "재현 절차..." \
+  --labels bug,urgent \
+  --assignees teammate1,teammate2
+```
+
+#### 3. 이슈 수정
+```bash
+xgit -e issues:update -u your-username -n some-repo \
+  --issue-number 12 \
+  --state closed \
+  --labels bug,resolved \
+  --assignees teammate1
+```
+
+### 프로젝트(Projects) 관리
+
+#### 1. 프로젝트 목록 조회
+```bash
+# 기본: 열린 프로젝트
+xgit -e projects:list -u your-username -n some-repo
+
+# 모든 상태 조회
+xgit -e projects:list -u your-username -n some-repo --state all
+```
+
+#### 2. 프로젝트 생성
+```bash
+xgit -e projects:create -u your-username -n some-repo \
+  --project-name "Sprint 1" \
+  --body "2월 스프린트 업무 보드"
+```
+
+#### 3. 프로젝트 컬럼 & 카드 생성
+```bash
+# 컬럼 생성
+xgit -e projects:create-column -u your-username \
+  --project-id 12345678 \
+  --column-name "To Do"
+
+# 카드 생성 (노트)
+xgit -e projects:create-card -u your-username \
+  --column-id 87654321 \
+  --note "회의 준비"
+
+# 카드 생성 (이슈 연결)
+xgit -e projects:create-card -u your-username \
+  --column-id 87654321 \
+  --content-id 42 \
+  --content-type Issue
+```
+
+### GitHub Actions 관리
+
+#### 1. 워크플로 목록 확인
+```bash
+xgit -e actions:list-workflows -u your-username -n some-repo
+```
+
+#### 2. 워크플로 실행 기록 조회
+```bash
+xgit -e actions:list-runs -u your-username -n some-repo \
+  --workflow-id deploy.yml \
+  --branch main \
+  --status in_progress
+```
+
+#### 3. 워크플로 디스패치
+```bash
+xgit -e actions:dispatch -u your-username -n some-repo \
+  --workflow-id deploy.yml \
+  --ref main \
+  --inputs '{"environment":"production"}'
 ```
 
 ### XCLI 명령어

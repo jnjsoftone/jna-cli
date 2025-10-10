@@ -16,6 +16,9 @@ JNA-CLI is a command-line interface tool designed to streamline GitHub repositor
 
 ### 1.2 Key Features
 - GitHub repository CRUD operations
+- GitHub Issues management (list/create/update)
+- GitHub Projects (classic) board, column, card automation
+- GitHub Actions workflow inspection and manual dispatch
 - Automated project initialization with templates
 - Git configuration and authentication management
 - Cross-platform compatibility (Windows, macOS, Linux)
@@ -46,7 +49,13 @@ xgit -e <operation> -u <username> -n <repository> [options]
 **Optional Parameters**:
 - `-d, --description`: Repository description or commit message (string)
 - `-p, --isPrivate`: Private repository flag (boolean, default: false)
-- `-s, --src`: Source location for templates (string, default: 'local')
+- `-s, --src`: Source location for account metadata (string, default: 'local')
+- `--state`: Issue or project state filter (`open`, `closed`, `all`)
+- `--labels`: Comma-separated label list for issue queries
+- `--assignee`, `--assignees`: Issue assignment filters
+- `--per-page`, `--page`: Pagination controls for list operations
+- `--project-name`, `--column-name`: Project/column creation descriptors
+- `--workflow-id`, `--ref`, `--inputs`: GitHub Actions workflow targeting parameters
 
 #### 2.1.2 Supported Operations
 
@@ -61,6 +70,16 @@ xgit -e <operation> -u <username> -n <repository> [options]
 | Make Repository | `make`, `makeRepo` | Complete repository workflow | username, repo name, description |
 | Delete Repository | `del`, `deleteRemoteRepo` | Remove remote repository | username, repo name |
 | Remove Repository | `remove`, `removeRepo` | Remove remote + local repository | username, repo name |
+| List Issues | `issues:list` | Fetch repository issues with filters | username, repo name |
+| Create Issue | `issues:create` | Open new issue with metadata | username, repo name, title |
+| Update Issue | `issues:update` | Modify existing issue fields | username, repo name, issue number |
+| List Projects | `projects:list` | Enumerate repository projects | username, repo name |
+| Create Project | `projects:create` | Create classic project board | username, repo name, project name |
+| Create Column | `projects:create-column` | Add column to project board | project id, column name |
+| Create Card | `projects:create-card` | Add note or linked issue card | column id, note or content id/type |
+| List Workflows | `actions:list-workflows` | Retrieve GitHub Actions workflows | username, repo name |
+| List Workflow Runs | `actions:list-runs` | Fetch workflow run history | username, repo name |
+| Dispatch Workflow | `actions:dispatch` | Trigger workflow with inputs | username, repo name, workflow id, ref |
 
 ### 2.2 Core Functional Modules
 
@@ -74,6 +93,7 @@ xgit -e <operation> -u <username> -n <repository> [options]
   - Searches local environment variables first
   - Falls back to remote configuration files
   - Returns account with token, email, and metadata
+  - Applies CLI-supplied username as fallback when stored account id is missing
 - **Error Handling**: Returns undefined on failure, logs error messages
 
 **Function**: `setLocalConfig(options, account, localPath)`
@@ -85,7 +105,7 @@ xgit -e <operation> -u <username> -n <repository> [options]
   - Configures remote origin URL with authentication
   - Updates local repository configuration
 
-#### 2.2.2 Repository Management Module
+#### 2.2.2 Repository & Collaboration Module
 
 **Function**: `createRemoteRepo(octokit, options)`
 - **Purpose**: Create new GitHub repository
@@ -120,6 +140,75 @@ xgit -e <operation> -u <username> -n <repository> [options]
   - Adds remote origin
   - Creates initial commit with custom message
 - **Error Handling**: Continues on branch rename failures, logs errors
+
+**Function**: `listRepoIssues(octokit, options)`
+- **Purpose**: Retrieve issues from repository
+- **Input**: IssueListOptions (state, labels, assignee, pagination)
+- **Output**: Array of issue objects
+- **Behavior**: Joins labels for API, supports default pagination, limits console output
+- **Error Handling**: Propagates Octokit error status codes to caller
+
+**Function**: `createRepoIssue(octokit, options)`
+- **Purpose**: Create new repository issue
+- **Input**: IssueCreateOptions (title, body, labels, assignees, milestone)
+- **Output**: Created issue object
+- **Behavior**: Supports optional assignees/labels, accepts milestone id
+- **Error Handling**: Surfaces missing scope or validation errors
+
+**Function**: `updateRepoIssue(octokit, options)`
+- **Purpose**: Update existing issue fields
+- **Input**: IssueUpdateOptions (issue number, state, metadata)
+- **Output**: Updated issue object
+- **Behavior**: Validates state transitions, allows clearing milestone with null
+- **Error Handling**: Throws on nonexistent issue or insufficient permissions
+
+**Function**: `listRepoProjects(octokit, options)`
+- **Purpose**: Fetch classic project boards
+- **Input**: ProjectListOptions (state filter, pagination)
+- **Output**: Array of project metadata
+- **Behavior**: Aggregates open/closed when `all` supplied; defaults to open
+- **Error Handling**: Converts permission errors to actionable log messages
+
+**Function**: `createRepoProject(octokit, options)`
+- **Purpose**: Create project board
+- **Input**: ProjectCreateOptions (name, body)
+- **Output**: Created project object
+- **Error Handling**: Propagates duplicate name and scope errors
+
+**Function**: `createProjectColumn(octokit, options)`
+- **Purpose**: Add columns to project board
+- **Input**: ProjectColumnOptions (projectId, name)
+- **Output**: Created column object
+- **Behavior**: Requires numeric project id; surfaces invalid id messages
+- **Error Handling**: Passes Octokit errors to caller
+
+**Function**: `createProjectCard(octokit, options)`
+- **Purpose**: Add note or linked issue/pull request card
+- **Input**: ProjectCardOptions (columnId, note or content reference)
+- **Output**: Created card object
+- **Behavior**: Normalizes content type; enforces presence of note or content pair
+- **Error Handling**: Validates mutually exclusive note/content combinations
+
+**Function**: `listRepoWorkflows(octokit, options)`
+- **Purpose**: Retrieve GitHub Actions workflows
+- **Input**: WorkflowListOptions (pagination)
+- **Output**: Workflow list payload
+- **Behavior**: Filters results to CLI-friendly summaries
+- **Error Handling**: Handles repositories without workflows gracefully
+
+**Function**: `listWorkflowRuns(octokit, options)`
+- **Purpose**: Query workflow run history
+- **Input**: WorkflowRunsOptions (workflow id, branch, status, pagination)
+- **Output**: Workflow run array
+- **Behavior**: Supports numeric ids or filenames; normalizes status filters
+- **Error Handling**: Raises descriptive errors for invalid workflow references
+
+**Function**: `dispatchWorkflow(octokit, options)`
+- **Purpose**: Trigger workflow via API dispatch
+- **Input**: WorkflowDispatchOptions (workflow id/filename, ref, optional inputs)
+- **Output**: Void (returns API acknowledgment)
+- **Behavior**: Parses JSON input payloads, ensures sanitized logging of account data
+- **Error Handling**: Captures invalid JSON, missing ref, or permission issues
 
 #### 2.2.3 Project Initialization Module (`cli.ts`)
 
