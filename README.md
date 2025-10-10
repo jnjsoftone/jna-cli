@@ -38,6 +38,8 @@ npm login jnjsoftone
 
 # macos
 ./publish.sh
+
+./publish.sh -m "message"
 ```
 
 ===

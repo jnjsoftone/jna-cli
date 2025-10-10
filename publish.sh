@@ -13,9 +13,9 @@ NC='\033[0m' # No Color
 mode="patch"
 commit_msg="chore: build for publish"
 dry_run=false
-skip_tests=false
+skip_tests=true
 force_publish=false
-auto_commit=false
+auto_commit=true
 
 # Helper functions
 log_info() {
