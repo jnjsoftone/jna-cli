@@ -77,12 +77,20 @@ const findGithubAccount = async (userName: string, src = 'github'): Promise<Gith
   try {
     if (src === 'local') {
       const accounts = await loadJson(`${localEnvRoot}/Apis/github.json`);
-      return accounts?.[userName];
+      const account = accounts?.[userName];
+      if (account) {
+        account.userName = account.userName ?? userName;
+      }
+      return account;
     } else if (src === 'github') {
       // console.log(`### userName: ${userName}  githubEnv: ${JSON.stringify(githubEnv)}`);
       const res = await readJsonFromGithub('Apis/github.json', githubEnv);
       // console.log(`### readJsonFromGithub: ${JSON.stringify(res)} res[userName]: ${res[userName]}`);
-      return res?.[userName];
+      const account = res?.[userName];
+      if (account) {
+        account.userName = account.userName ?? userName;
+      }
+      return account;
     }
     return undefined;
   } catch (error) {
