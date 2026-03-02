@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 import { Octokit } from '@octokit/rest';
 import yargs from 'yargs';
 import { execSync } from 'child_process';

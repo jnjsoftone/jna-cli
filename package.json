@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "jna-cli",
   "version": "0.0.45",
   "description": "Jnjsoft Nodejs App for cli(Command Line Interface) With xgit, xcli, xweb, ... in Typescript",

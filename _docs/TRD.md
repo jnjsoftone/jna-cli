@@ -1,4 +1,4 @@
-# Technical Requirements Document (TRD)
+﻿# Technical Requirements Document (TRD)
 ## JNA-CLI: GitHub Repository Management CLI Tool
 
 ### 1. System Architecture

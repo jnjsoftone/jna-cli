@@ -1,4 +1,4 @@
-# Functional Specification
+﻿# Functional Specification
 ## JNA-CLI: GitHub Repository Management CLI Tool
 
 ### 📋 Document Information

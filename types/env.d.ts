@@ -1,4 +1,4 @@
-declare const githubEnv: {
+﻿declare const githubEnv: {
     owner: string;
     repo: string;
     token: string;

@@ -1,4 +1,4 @@
----
+﻿---
 - name: 'jna-cli'
 - description: 'Jnjsoft Nodejs App for cli(Command Line Interface) With xgit, xcli, xweb, ... in Typescript'
 - author: 'JnJ One <jnjsoft.one@gmail.com>'

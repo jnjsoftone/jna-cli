@@ -1,4 +1,4 @@
-import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
+﻿import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import Path from 'path';
 import { copyFolderToLocal } from 'jnu-cloud';
 import {

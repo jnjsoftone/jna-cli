@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 // & IMPORT
 //&============================================================================
 import yargs from 'yargs';

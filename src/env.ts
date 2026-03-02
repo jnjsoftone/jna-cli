@@ -1,4 +1,4 @@
-const githubEnv = {
+﻿const githubEnv = {
   owner: process.env.ENV_GITHUB_OWNER || '',
   repo: process.env.ENV_GITHUB_REPO || '',
   token: process.env.ENV_GITHUB_TOKEN || '',
